@@ -1,0 +1,25 @@
+/**************************************************
+ *
+ * IAR EMBEDDED WORKBENCH TUTORIAL
+ *
+ * Copyright 1996 - 2003 IAR Systems. All rights reserved.
+ *
+ * $Revision: 1.2 $
+ *
+ **************************************************/
+
+	NAME main
+	ORG 0x00 	; reset vector address
+	RJMP main
+        
+	EXTERN max
+	RSEG CODE:CODE
+main:
+	LDI R17, 3
+	LDI R16, 4
+	RCALL max 	; return MAX(R16,R17) in R16
+	LDI R17, 5
+	LDI R16, 4
+	RCALL max       ; return MAX(R16,R17) in R16
+exit:   RJMP exit
+	END main

@@ -1,0 +1,150 @@
+‘а ў­Ґ­ЁҐ д ©«®ў mbsl1.c.old Ё MBSL1.C.NEW
+***** mbsl1.c.old
+extern UINT getcrc(UCHAR *puchMsg, UINT usDataLen);
+
+
+#ifdef mbslave0
+unsigned char t25,t35,t45;
+#else 
+extern unsigned char t25,t35,t45;
+#endif
+
+char len1;
+***** MBSL1.C.NEW
+extern UINT getcrc(UCHAR *puchMsg, UINT usDataLen);
+char len1;
+*****
+
+***** mbsl1.c.old
+//  TIMSK|=2;//разрешили прерывание от таймера  по COMP !!!!!!
+   OCIE1CH=1;
+  
+  UCSR1B|=(1<<RXCIE1); //разрешили прерывания от приемника
+***** MBSL1.C.NEW
+//  TIMSK|=2;//разрешили прерывание от таймера  по COMP !!!!!!
+  OCIE1CH=1;
+  UCSR1B|=(1<<RXCIE1); //разрешили прерывания от приемника
+*****
+
+***** mbsl1.c.old
+
+///  gron3
+//  b=UDR1;
+//  if((u1.state==sync)||((UCSR1A&16)!=zero)){char b; b=UDR1;TCNT1CH=zero;u1.state=sync;goto erx;};//была проверка на корректно
+ть кадра -стоп бит и  паритет
+  if((u1.state==sync)){goto error_rx;};
+//      gron3
+  if (u1.state==wait1){
+***** MBSL1.C.NEW
+
+//redon3
+  if((u1.state==sync)){goto error_rx;};
+  if (u1.state==wait1){
+*****
+
+***** mbsl1.c.old
+
+    if(((UCSR1A&16)!=zero)){goto error_rx;};//была проверка на корректность кадра -стоп бит и  паритет
+//    gron3;
+***** MBSL1.C.NEW
+
+    if((UCSR1A&((1<<FE1)|(1<<PE1)))!=zero){goto error_rx;};//была проверка на корректность кадра -стоп бит и  паритет /!!!!!!!
+//    gron3;
+*****
+
+***** mbsl1.c.old
+  }else { //осталось состояние приема тела кадра. При остальных прерываний быть не должно
+//     gron3  
+     if(TCNT1CH<t45){ 
+        if(((UCSR1A&16)!=zero)){goto error_rx;};//была проверка на корректность кадра -стоп бит и  паритет
+        TCNT1CH=zero; u1.rbuf[u1.l++]=UDR1; 
+***** MBSL1.C.NEW
+  }else { //осталось состояние приема тела кадра. При остальных прерываний быть не должно
+//   gron3  
+     if(TCNT1CH<t45){ 
+//        if(((UCSR1A&16)!=zero)){goto error_rx;};//была проверка на корректность кадра -стоп бит и  паритет
+          if((UCSR1A&((1<<FE1)|(1<<PE1)))!=zero){goto error_rx;};//была проверка на корректность кадра -стоп бит и  паритет /!!
+!!!!
+        TCNT1CH=zero; u1.rbuf[u1.l++]=UDR1; 
+*****
+
+***** mbsl1.c.old
+error_rx:
+//  {char b;     b=UDR1;b++; }
+  getrx1
+  TCNT1CH=zero;u1.state=sync; 
+//  redon3;
+erx: 
+***** MBSL1.C.NEW
+error_rx:
+//  off3 ;redon3; 
+//  {char b;     b=UDR1; }
+  getrx1 
+  TCNT1CH=zero;u1.state=sync; 
+erx: 
+*****
+
+***** mbsl1.c.old
+///////////////////////////////////////////////////////////////////////////////////////////////////
+extern UCHAR maxc;
+***** MBSL1.C.NEW
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+extern UCHAR maxc;
+*****
+
+***** mbsl1.c.old
+UINT rg;
+  if ((u1.rbuf[4]!=zero)|((u1.rbuf[5]*2)!=u1.rbuf[6])) return 3;//illegal data value
+  rg=(u1.rbuf[2]<<8)+u1.rbuf[3];
+  if ((rg+u1.rbuf[5])>rammax)   return 2;//illegal data address;
+  if ((rg>eepromm)&&(rg<rammin))return 7;
+***** MBSL1.C.NEW
+UINT rg;
+  rg=(u1.rbuf[2]<<8)+u1.rbuf[3];
+  if (rg==0x777){reset_cpu();  return zero;}; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  if ((rg==0x778)&&(u1.rbuf[8]==0xaa)){wr_fl=1;  return zero;};//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  if ((u1.rbuf[4]!=zero)|((u1.rbuf[5]*2)!=u1.rbuf[6])) return 3;//illegal data value
+//  rg=(u1.rbuf[2]<<8)+u1.rbuf[3];
+  if ((rg+u1.rbuf[5])>rammax)   return 2;//illegal data address;
+  
+  if ((rg>eepromm)&&(rg<rammin))return 7;
+*****
+
+***** mbsl1.c.old
+  }
+  //обработка записи в EEPROM
+***** MBSL1.C.NEW
+  }
+  if ((rg==1)||(rg==2))
+     if(wr_fl==1) {return 2;}//illegal data address; ;
+        else {wr_fl=1;   return wrblock_ini(rg,u1.rbuf[5],(UINT*)&(u1.rbuf[7]));}
+     
+  //обработка записи в EEPROM
+*****
+
+***** mbsl1.c.old
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#pragma vector=TIMERch1_COMP_vect
+#pragma vector=TIMER2_COMP_vect
+__interrupt void tch1_comp_isr(){
+***** MBSL1.C.NEW
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma vector=TIMERch1_COMP_vect
+__interrupt void tch1_comp_isr(){
+*****
+
+***** mbsl1.c.old
+//  gronw
+//  gron4
+  UCSR1B&=~(1<<RXCIE1);//запрещаем прерывания от приемника
+  OCIE1CH=zero; //!!!! запрещаем прерывания от таймера 
+
+***** MBSL1.C.NEW
+//  gronw
+  UCSR1B&=~(1<<RXCIE1);//запрещаем прерывания от приемника
+  OCIE1CH=zero; //!!!! запрещаем прерывания от таймера OCIE1=zero
+
+*****
+

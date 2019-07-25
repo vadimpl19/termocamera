@@ -1,0 +1,1717 @@
+##############################################################################
+#                                                                            #
+# IAR Atmel AVR C/EC++ Compiler V3.20C/W32             07/Aug/2006  16:02:20 #
+# Copyright 1996-2004 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Source file  =  D:\temp\sys_msap01mk_dev0103\OneWire\1wire_cmd.c        #
+#    Command line =  --cpu=m128 -ms -o D:\temp\sys_msap01mk_dev0103\Release\ #
+#                    Obj\ -lCN D:\temp\sys_msap01mk_dev0103\Release\List\    #
+#                    -y --initializers_in_flash -s9                          #
+#                    -DENABLE_BIT_DEFINITIONS -e -I "F:\Program Files\IAR    #
+#                    Systems\Embedded Workbench 3.2\avr\INC\" -I             #
+#                    "F:\Program Files\IAR Systems\Embedded Workbench        #
+#                    3.2\avr\INC\CLIB\" --eeprom_size 4096                   #
+#                    D:\temp\sys_msap01mk_dev0103\OneWire\1wire_cmd.c        #
+#    List file    =  D:\temp\sys_msap01mk_dev0103\Release\List\1wire_cmd.lst #
+#    Object file  =  D:\temp\sys_msap01mk_dev0103\Release\Obj\1wire_cmd.r90  #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+D:\temp\sys_msap01mk_dev0103\OneWire\1wire_cmd.c
+      1          #include <iom128.h>
+      2          #include <inavr.h>
+      3          #include <ina90.h>
+      4          
+      5          #include "1wire_cmd.h"
+      6          #include "1wire.h"
+      7          #include "delay.h"
+      8          //#include "../led.h"
+      9          #include "../types.h"
+     10          #include "../base.h"
+     11          #include"../timeservice.h"
+     12          //#include"../hist.h"
+     13          extern unsigned char flag;//флаг записи 0 по прерыванию от таймера
+     14          
+
+   \                                 In segment NEAR_Z, align 1, keep-with-next
+   \   00000000                              REQUIRE `?<Segment init: NEAR_Z>`
+     15          unsigned char f_presence;
+   \                     f_presence:
+   \   00000000                              DS 1
+     16          
+     17          #pragma vector=INT7_vect
+
+   \                                 In segment CODE, align 2, keep-with-next
+     18          __interrupt void Int7(void)
+   \                     Int7:
+     19          {
+   \   00000000   93FA                       ST      -Y,R31
+   \   00000002   93EA                       ST      -Y,R30
+   \   00000004   931A                       ST      -Y,R17
+   \   00000006   930A                       ST      -Y,R16
+   \   00000008   B71F                       IN      R17,0x3F
+     20            f_presence &= ~(0x01);
+   \   0000000A   ....                       LDI     R30,LOW(f_presence)
+   \   0000000C   ....                       LDI     R31,(f_presence) >> 8
+   \   0000000E   8100                       LD      R16,Z
+   \   00000010   7F0E                       ANDI    R16,0xFE
+   \   00000012   8300                       ST      Z,R16
+     21            ch1_up=1;
+   \   00000014   9ADF                       SBI     0x1B,0x07
+     22            EIMSK &= ~(1<<INT7);
+   \   00000016   B709                       IN      R16,0x39
+   \   00000018   770F                       ANDI    R16,0x7F
+   \   0000001A   BF09                       OUT     0x39,R16
+     23            EIFR = (1<<INT7);
+   \   0000001C   E800                       LDI     R16,128
+   \   0000001E   ....                       RJMP    ?Subroutine0
+     24          }
+
+   \                                 In segment CODE, align 2, keep-with-next
+   \                     ?Subroutine0:
+   \   00000000   BF08                       OUT     0x38,R16
+   \   00000002   BF1F                       OUT     0x3F,R17
+   \   00000004   9109                       LD      R16,Y+
+   \   00000006   9119                       LD      R17,Y+
+   \   00000008   91E9                       LD      R30,Y+
+   \   0000000A   91F9                       LD      R31,Y+
+   \   0000000C   9518                       RETI
+     25          
+     26          #pragma vector=INT6_vect
+
+   \                                 In segment CODE, align 2, keep-with-next
+     27          __interrupt void Int6(void)
+   \                     Int6:
+     28          {
+   \   00000000   93FA                       ST      -Y,R31
+   \   00000002   93EA                       ST      -Y,R30
+   \   00000004   931A                       ST      -Y,R17
+   \   00000006   930A                       ST      -Y,R16
+   \   00000008   B71F                       IN      R17,0x3F
+     29            f_presence &= ~(0x02);
+   \   0000000A   ....                       LDI     R30,LOW(f_presence)
+   \   0000000C   ....                       LDI     R31,(f_presence) >> 8
+   \   0000000E   8100                       LD      R16,Z
+   \   00000010   7F0D                       ANDI    R16,0xFD
+   \   00000012   8300                       ST      Z,R16
+     30            ch2_up=1;
+   \   00000014   9ADD                       SBI     0x1B,0x05
+     31            EIMSK &= ~(1<<INT6);
+   \   00000016   B709                       IN      R16,0x39
+   \   00000018   7B0F                       ANDI    R16,0xBF
+   \   0000001A   BF09                       OUT     0x39,R16
+     32            EIFR = (1<<INT6);
+   \   0000001C   E400                       LDI     R16,64
+   \   0000001E   ....                       RJMP    ?Subroutine0
+     33          }
+     34          
+     35          #pragma vector=INT5_vect
+
+   \                                 In segment CODE, align 2, keep-with-next
+     36          __interrupt void Int5(void)
+   \                     Int5:
+     37          {
+   \   00000000   93FA                       ST      -Y,R31
+   \   00000002   93EA                       ST      -Y,R30
+   \   00000004   931A                       ST      -Y,R17
+   \   00000006   930A                       ST      -Y,R16
+   \   00000008   B71F                       IN      R17,0x3F
+     38            f_presence &= ~(0x04);
+   \   0000000A   ....                       LDI     R30,LOW(f_presence)
+   \   0000000C   ....                       LDI     R31,(f_presence) >> 8
+   \   0000000E   8100                       LD      R16,Z
+   \   00000010   7F0B                       ANDI    R16,0xFB
+   \   00000012   8300                       ST      Z,R16
+     39              ch3_up=1;
+   \   00000014   9AD9                       SBI     0x1B,0x01
+     40            EIMSK &= ~(1<<INT5);
+   \   00000016   B709                       IN      R16,0x39
+   \   00000018   7D0F                       ANDI    R16,0xDF
+   \   0000001A   BF09                       OUT     0x39,R16
+     41            EIFR = (1<<INT5);
+   \   0000001C   E200                       LDI     R16,32
+   \   0000001E                              REQUIRE ?Subroutine0
+   \   0000001E                      ;               // Fall through to label ?Subroutine0
+     42          }
+     43          
+     44          #pragma vector=INT4_vect
+
+   \                                 In segment CODE, align 2, keep-with-next
+     45          __interrupt void Int4(void)
+   \                     Int4:
+     46          {
+   \   00000000   93FA                       ST      -Y,R31
+   \   00000002   93EA                       ST      -Y,R30
+   \   00000004   931A                       ST      -Y,R17
+   \   00000006   930A                       ST      -Y,R16
+   \   00000008   B71F                       IN      R17,0x3F
+     47            f_presence &= ~(0x08);
+   \   0000000A   ....                       LDI     R30,LOW(f_presence)
+   \   0000000C   ....                       LDI     R31,(f_presence) >> 8
+   \   0000000E   8100                       LD      R16,Z
+   \   00000010   7F07                       ANDI    R16,0xF7
+   \   00000012   8300                       ST      Z,R16
+     48              ch4_up=1;
+   \   00000014   91000062                   LDS     R16,98
+   \   00000018   6001                       ORI     R16,0x01
+   \   0000001A   93000062                   STS     98,R16
+     49            EIMSK &= ~(1<<INT4);
+   \   0000001E   B709                       IN      R16,0x39
+   \   00000020   7E0F                       ANDI    R16,0xEF
+   \   00000022   BF09                       OUT     0x39,R16
+     50            EIFR = (1<<INTF4);
+   \   00000024   E100                       LDI     R16,16
+   \   00000026   ....                       RJMP    ?Subroutine0
+     51          }
+     52          /****************************************
+     53          void  kzhandle(err); 
+     54           функция обработки КЗ на шлейфе
+     55          устанавливает бит - линия в порядке только после выдержки таймаута в 3 с
+     56          ****************************************/
+
+   \                                 In segment CODE, align 2, keep-with-next
+     57          void  kzhandle(char err)
+   \                     kzhandle:
+     58          {char i;
+   \   00000000   929A                       ST      -Y,R9
+   \   00000002   928A                       ST      -Y,R8
+   \   00000004   927A                       ST      -Y,R7
+   \   00000006   926A                       ST      -Y,R6
+   \   00000008   925A                       ST      -Y,R5
+   \   0000000A   924A                       ST      -Y,R4
+   \   0000000C   93BA                       ST      -Y,R27
+   \   0000000E   93AA                       ST      -Y,R26
+   \   00000010   939A                       ST      -Y,R25
+   \   00000012   938A                       ST      -Y,R24
+   \   00000014                              REQUIRE ?Register_R4_is_cg_reg
+   \   00000014                              REQUIRE ?Register_R5_is_cg_reg
+   \   00000014                              REQUIRE ?Register_R6_is_cg_reg
+   \   00000014                              REQUIRE ?Register_R7_is_cg_reg
+   \   00000014                              REQUIRE ?Register_R8_is_cg_reg
+   \   00000014                              REQUIRE ?Register_R9_is_cg_reg
+   \   00000014   2E90                       MOV     R9,R16
+     59          //    return;
+     60              err=~err;
+   \   00000016   9490                       COM     R9
+     61              for (i=0;i<4;i++){
+   \   00000018   2488                       CLR     R8
+   \   0000001A   ....                       LDI     R24,LOW(ramb)
+   \   0000001C   ....                       LDI     R25,(ramb) >> 8
+   \   0000001E   01DC                       MOVW    R27 : R26,R25 : R24
+     62          //            addh(0x2222);
+     63          //            addh(err);
+     64          //            addh(i);
+     65          
+     66                    if (err&(1<<i)) {//обнулили статусы датчиков в работе, на шлейфах с КЗ.
+   \                     ??kzhandle_0:
+   \   00000020   E001                       LDI     R16,1
+   \   00000022   E010                       LDI     R17,0
+   \   00000024   2D48                       MOV     R20,R8
+   \   00000026   ........                   CALL    ?S_SHL_L02
+   \   0000002A   0128                       MOVW    R5 : R4,R17 : R16
+   \   0000002C   0138                       MOVW    R7 : R6,R17 : R16
+   \   0000002E   9460                       COM     R6
+   \   00000030   9470                       COM     R7
+   \   00000032   2109                       AND     R16,R9
+   \   00000034   F0B9                       BREQ    ??kzhandle_1
+     67          //            addh(0x3333);
+     68                        ramb[0+i*2]=ramb[1+i*2]=ramb[0x10+i*2]=ramb[0x11+i*2]=0;
+   \   00000036   E000                       LDI     R16,0
+   \   00000038   01FD                       MOVW    R31 : R30,R27 : R26
+   \   0000003A   A302                       STD     Z+34,R16
+   \   0000003C   A303                       STD     Z+35,R16
+   \   0000003E   A300                       STD     Z+32,R16
+   \   00000040   A301                       STD     Z+33,R16
+   \   00000042   8302                       STD     Z+2,R16
+   \   00000044   8303                       STD     Z+3,R16
+   \   00000046   930D                       ST      X+,R16
+   \   00000048   930C                       ST      X,R16
+   \   0000004A   9711                       SBIW    R27 : R26,1
+     69                        dev_status |=1<<i;
+   \   0000004C   01FC                       MOVW    R31 : R30,R25 : R24
+   \   0000004E   A900                       LDD     R16,Z+48
+   \   00000050   A911                       LDD     R17,Z+49
+   \   00000052   2904                       OR      R16,R4
+   \   00000054   2915                       OR      R17,R5
+   \   00000056   AB00                       STD     Z+48,R16
+   \   00000058   AB11                       STD     Z+49,R17
+     70                        ramb[0x1a]&=~(1<<i);
+   \   0000005A   A904                       LDD     R16,Z+52
+   \   0000005C   A915                       LDD     R17,Z+53
+   \   0000005E   2106                       AND     R16,R6
+   \   00000060   2117                       AND     R17,R7
+   \   00000062   C01E                       RJMP    ??kzhandle_2
+     71                    }
+     72                    else {  
+     73          //           addh(0x4444);
+     74                       if (ramb[0x1a]&(1<<i)){// уже было отсутствие КЗ, проверим таймаут
+   \                     ??kzhandle_1:
+   \   00000064   2D08                       MOV     R16,R8
+   \   00000066   9503                       INC     R16
+   \   00000068   01FC                       MOVW    R31 : R30,R25 : R24
+   \   0000006A   A924                       LDD     R18,Z+52
+   \   0000006C   A935                       LDD     R19,Z+53
+   \   0000006E   2124                       AND     R18,R4
+   \   00000070   2331                       AND     R19,R17
+   \   00000072   2B23                       OR      R18,R19
+   \   00000074   F061                       BREQ    ??kzhandle_3
+     75                          if (!gettout(1+i)) dev_status &=~(1<<i);  // ==0 - таймаут  истек    
+   \   00000076   ........                   CALL    gettout
+   \   0000007A   2300                       TST     R16
+   \   0000007C   F499                       BRNE    ??kzhandle_4
+   \   0000007E   01FC                       MOVW    R31 : R30,R25 : R24
+   \   00000080   A900                       LDD     R16,Z+48
+   \   00000082   A911                       LDD     R17,Z+49
+   \   00000084   2106                       AND     R16,R6
+   \   00000086   2117                       AND     R17,R7
+   \   00000088   AB00                       STD     Z+48,R16
+   \   0000008A   AB11                       STD     Z+49,R17
+   \   0000008C   C00B                       RJMP    ??kzhandle_4
+     76                       }else {//КЗ не было, взведем таймаут
+     77                          settout(1+i,3000);
+   \                     ??kzhandle_3:
+   \   0000008E   EB28                       LDI     R18,184
+   \   00000090   E03B                       LDI     R19,11
+   \   00000092   ........                   CALL    settout
+     78                          ramb[0x1a]|=1<<i;
+   \   00000096   01FC                       MOVW    R31 : R30,R25 : R24
+   \   00000098   A904                       LDD     R16,Z+52
+   \   0000009A   A915                       LDD     R17,Z+53
+   \   0000009C   2904                       OR      R16,R4
+   \   0000009E   2915                       OR      R17,R5
+   \                     ??kzhandle_2:
+   \   000000A0   AB04                       STD     Z+52,R16
+   \   000000A2   AB15                       STD     Z+53,R17
+     79                       }  
+     80                    }    
+     81              }
+   \                     ??kzhandle_4:
+   \   000000A4   9483                       INC     R8
+   \   000000A6   9614                       ADIW    R27 : R26,4
+   \   000000A8   E004                       LDI     R16,4
+   \   000000AA   1680                       CP      R8,R16
+   \   000000AC   F408                       BRCC    $+2+2
+   \   000000AE   CFB8                       RJMP    ??kzhandle_0
+     82          };    
+   \   000000B0   9189                       LD      R24,Y+
+   \   000000B2   9199                       LD      R25,Y+
+   \   000000B4   91A9                       LD      R26,Y+
+   \   000000B6   91B9                       LD      R27,Y+
+   \   000000B8   9049                       LD      R4,Y+
+   \   000000BA   9059                       LD      R5,Y+
+   \   000000BC   9069                       LD      R6,Y+
+   \   000000BE   9079                       LD      R7,Y+
+   \   000000C0   9089                       LD      R8,Y+
+   \   000000C2   9099                       LD      R9,Y+
+   \   000000C4   9508                       RET
+     83          /****************************************
+     84          w1_reset 
+     85          bit0  -channel 1
+     86          bit1  -channel 2
+     87          bit2  -channel 3
+     88          bit3  -channel 4
+     89          ****************************************/
+
+   \                                 In segment CODE, align 2, keep-with-next
+     90          char w1_reset(unsigned char chn)
+   \                     w1_reset:
+     91          {
+   \   00000000   939A                       ST      -Y,R25
+   \   00000002   938A                       ST      -Y,R24
+   \   00000004   2F90                       MOV     R25,R16
+     92            unsigned char err=0;
+   \   00000006   E080                       LDI     R24,0
+     93          //  off2;off3;
+     94          
+     95          //  return 0;
+     96            if (f_presence!=0x0f)kzhandle(f_presence); //была КЗ линии
+   \   00000008   9100....                   LDS     R16,f_presence
+   \   0000000C   300F                       CPI     R16,15
+   \   0000000E   F009                       BREQ    ??w1_reset_0
+   \   00000010   ....                       RCALL   kzhandle
+     97            if (chn & 0x01) line1_down;  
+   \                     ??w1_reset_0:
+   \   00000012   FB90                       BST     R25,0
+   \   00000014   F436                       BRTC    ??w1_reset_1
+   \   00000016   9ADF                       SBI     0x1B,0x07
+   \   00000018   91000065                   LDS     R16,101
+   \   0000001C   6004                       ORI     R16,0x04
+   \   0000001E   93000065                   STS     101,R16
+     98            if (chn & 0x02) line2_down;
+   \                     ??w1_reset_1:
+   \   00000022   FB91                       BST     R25,1
+   \   00000024   F416                       BRTC    ??w1_reset_2
+   \   00000026   9ADD                       SBI     0x1B,0x05
+   \   00000028   9ADE                       SBI     0x1B,0x06
+     99            if (chn & 0x04) line3_down;
+   \                     ??w1_reset_2:
+   \   0000002A   FB92                       BST     R25,2
+   \   0000002C   F416                       BRTC    ??w1_reset_3
+   \   0000002E   9AD9                       SBI     0x1B,0x01
+   \   00000030   9ADA                       SBI     0x1B,0x02
+    100            if (chn & 0x08) line4_down;
+   \                     ??w1_reset_3:
+   \   00000032   FB93                       BST     R25,3
+   \   00000034   F446                       BRTC    ??w1_reset_4
+   \   00000036   91000062                   LDS     R16,98
+   \   0000003A   6001                       ORI     R16,0x01
+   \   0000003C   93000062                   STS     98,R16
+   \   00000040   6002                       ORI     R16,0x02
+   \   00000042   93000062                   STS     98,R16
+    101                  //delay_(15*480);
+    102                  //W1_DDR &= ~(1<<W1_PIN); считывание происходит на прерывании INT7 по флагу
+    103          //  flag0 = 1;
+    104            flag =1;
+   \                     ??w1_reset_4:
+   \   00000046   E001                       LDI     R16,1
+   \   00000048   9300....                   STS     flag,R16
+    105            delay_(15*480);
+   \   0000004C   E200                       LDI     R16,32
+   \   0000004E   E11C                       LDI     R17,28
+   \   00000050   E020                       LDI     R18,0
+   \   00000052   E030                       LDI     R19,0
+   \   00000054   ........                   CALL    delay_
+    106          /*
+    107            f_presence = 0x0f;
+    108            __disable_interrupt();
+    109            EIMSK |= (1<<INT7) | (1<<INT6) | (1<<INT5) | (1<<INT4);
+    110            EIFR |= (1<<INTF7) | (1<<INTF6) | (1<<INTF5) | (1<<INTF4);
+    111            __enable_interrupt();
+    112          */
+    113            delay_(15*66);
+   \   00000058   ED0E                       LDI     R16,222
+   \   0000005A   E013                       LDI     R17,3
+   \   0000005C   E020                       LDI     R18,0
+   \   0000005E   E030                       LDI     R19,0
+   \   00000060   ........                   CALL    delay_
+    114            //err = (ch1_in);			// no presence detect
+    115          /*  err = (f_presence << 4); */
+    116            
+    117            delay_(15 * (480 - 66));
+   \   00000064   E402                       LDI     R16,66
+   \   00000066   E118                       LDI     R17,24
+   \   00000068   E020                       LDI     R18,0
+   \   0000006A   E030                       LDI     R19,0
+   \   0000006C   ........                   CALL    delay_
+    118            
+    119            if (ch1_in == 0) err |= 0x01; // short circuit
+   \   00000070   9B0F                       SBIS    0x01,0x07
+   \   00000072   E081                       LDI     R24,1
+    120            if (ch2_in == 0) err |= 0x02;
+   \                     ??w1_reset_5:
+   \   00000074   9B0E                       SBIS    0x01,0x06
+   \   00000076   6082                       ORI     R24,0x02
+    121            if (ch3_in == 0) err |= 0x04;
+   \                     ??w1_reset_6:
+   \   00000078   9B0D                       SBIS    0x01,0x05
+   \   0000007A   6084                       ORI     R24,0x04
+    122            if (ch4_in == 0) err |= 0x08;
+   \                     ??w1_reset_7:
+   \   0000007C   9B0C                       SBIS    0x01,0x04
+   \   0000007E   6088                       ORI     R24,0x08
+    123            kzhandle(~err); 
+   \                     ??w1_reset_8:
+   \   00000080   2F08                       MOV     R16,R24
+   \   00000082   9500                       COM     R16
+   \   00000084   ....                       RCALL   kzhandle
+    124            //ловушка на Козу )))
+    125             f_presence = 0x0f;
+   \   00000086   E00F                       LDI     R16,15
+   \   00000088   9300....                   STS     f_presence,R16
+    126            EIFR = (1<<INTF7) | (1<<INTF6) | (1<<INTF5) | (1<<INTF4);
+   \   0000008C   EF00                       LDI     R16,240
+   \   0000008E   BF08                       OUT     0x38,R16
+    127            EIMSK |= (1<<INT7) | (1<<INT6) | (1<<INT5) | (1<<INT4);
+   \   00000090   B709                       IN      R16,0x39
+   \   00000092   6F00                       ORI     R16,0xF0
+   \   00000094   BF09                       OUT     0x39,R16
+    128            return err;
+   \   00000096   2F08                       MOV     R16,R24
+   \   00000098   9189                       LD      R24,Y+
+   \   0000009A   9199                       LD      R25,Y+
+   \   0000009C   9508                       RET
+    129          }
+    130          extern unsigned char flag;
+    131          //char flagb=0;
+    132          #pragma inline=forced
+    133          unsigned char w1_bit_io( unsigned char b, char power_need )
+    134          {
+    135          //  return 0;
+    136          //char i;
+    137          //  while (flag){};//ожидаем выдержки паузы подпитки после предидущего бита 
+    138            if (f_presence!=0x0f) kzhandle(f_presence);//была КЗ !!! 
+    139             __disable_interrupt();
+    140           
+    141            line1_down; line2_down; line3_down; line4_down;
+    142             TIMSK |= (1<<OCIE1A);
+    143             TCCR1B = (1<<CS10);// /1
+    144             TCNT1 = 3;
+    145             OCR1A=884; //60 мкс
+    146             flag = power_need;
+    147             TIFR = 1<<OCF1A; //примерно 1,5 мкс идет 0   
+    148          
+    149          //  __delay_cycles(15 * 1);
+    150             
+    151          //  _NOP();_NOP();_NOP();
+    152            
+    153            if (b & 0x01) line1_up;
+    154            if (b & 0x02) line2_up;
+    155            if (b & 0x04) line3_up;
+    156            if (b & 0x08) line4_up;
+    157              
+    158          //  __delay_cycles(15 * (15 - 1));
+    159          //  red4=1;
+    160            while (TCNT1<(15*(15-2)));
+    161           
+    162            if (ch1_in == 0) b &= ~(0x01);
+    163            if (ch2_in == 0) b &= ~(0x02);
+    164            if (ch3_in == 0) b &= ~(0x04);
+    165            if (ch4_in == 0) b &= ~(0x08);
+    166            
+    167            __enable_interrupt();
+    168           
+    169             while (flag!=0){//ждем завершения отведенного времени
+    170               if(power_need==2) return b;// это был старт преобразования. выходим
+    171             }
+    172             __disable_interrupt();
+    173          //  OCR1A=15*35; //15;
+    174            OCR1A=15*35; //15;
+    175             flag=power_need; 
+    176            TCNT1=0; //задержка на 15 мкс для подпитки датчиков и гарантированного восстановления нормальной единицы в линии после КЗ;
+    177              __enable_interrupt();
+    178            while (flag);
+    179            // далее ставим ловушку на КЗ. 
+    180            /**************************************************************************************
+    181          Делаем на открытых прерываниях. манипулирование с масками внешних прерываний в обработчиках других прерываний
+    182          !!!!!!!!!!!!!!!!!!!!!!!!!!!!ЗАПРЕЩЕНО!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    183          *****************************************************************************************/
+    184            f_presence = 0x0f;
+    185            EIFR = (1<<INTF7) | (1<<INTF6) | (1<<INTF5) | (1<<INTF4);
+    186            EIMSK |= (1<<INT7) | (1<<INT6) | (1<<INT5) | (1<<INT4);
+    187            return b ;
+    188          }
+    189          
+    190          
+
+   \                                 In segment CODE, align 2, keep-with-next
+    191          void w1_byte_wr( unsigned char byte[4],char convertf)
+   \                     w1_byte_wr:
+    192          {
+   \   00000000   924A                       ST      -Y,R4
+   \   00000002   93BA                       ST      -Y,R27
+   \   00000004   93AA                       ST      -Y,R26
+   \   00000006   939A                       ST      -Y,R25
+   \   00000008   938A                       ST      -Y,R24
+   \   0000000A                              REQUIRE ?Register_R4_is_cg_reg
+   \   0000000A   01D8                       MOVW    R27 : R26,R17 : R16
+   \   0000000C   2F92                       MOV     R25,R18
+    193            unsigned char i, b;
+    194          /*  do
+    195            {
+    196              b = (byte[0] & 0x01) | ((byte[1] << 1) & 0x02) \
+    197                    | ((byte[2] << 2) & 0x04) | ((byte[3] << 3) & 0x08);
+    198              w1_bit_io( b );
+    199              byte[0] >>= 1;
+    200              byte[1] >>= 1;
+    201              byte[2] >>= 1;
+    202              byte[3] >>= 1;
+    203            }while( --i );
+    204          */
+    205            for(i=0;i<7;i++){
+   \   0000000E   E087                       LDI     R24,7
+    206              b = (byte[0] & 0x01) | ((byte[1] << 1) & 0x02) \
+    207                    | ((byte[2] << 2) & 0x04) | ((byte[3] << 3) & 0x08);
+    208              w1_bit_io( b,1 );
+   \                     ??w1_byte_wr_0:
+   \   00000010   01FD                       MOVW    R31 : R30,R27 : R26
+   \   00000012   8100                       LD      R16,Z
+   \   00000014   7001                       ANDI    R16,0x01
+   \   00000016   8111                       LDD     R17,Z+1
+   \   00000018   FB10                       BST     R17,0
+   \   0000001A   E010                       LDI     R17,0
+   \   0000001C   F911                       BLD     R17,1
+   \   0000001E   2B10                       OR      R17,R16
+   \   00000020   8102                       LDD     R16,Z+2
+   \   00000022   FB00                       BST     R16,0
+   \   00000024   E000                       LDI     R16,0
+   \   00000026   F902                       BLD     R16,2
+   \   00000028   2B01                       OR      R16,R17
+   \   0000002A   8113                       LDD     R17,Z+3
+   \   0000002C   FB10                       BST     R17,0
+   \   0000002E   2444                       CLR     R4
+   \   00000030   F843                       BLD     R4,3
+   \   00000032   2A40                       OR      R4,R16
+   \   00000034   9100....                   LDS     R16,f_presence
+   \   00000038   300F                       CPI     R16,15
+   \   0000003A   F009                       BREQ    ??w1_byte_wr_1
+   \   0000003C   ....                       RCALL   kzhandle
+   \                     ??w1_byte_wr_1:
+   \   0000003E   94F8                       CLI
+   \   00000040   9ADF                       SBI     0x1B,0x07
+   \   00000042   91000065                   LDS     R16,101
+   \   00000046   6004                       ORI     R16,0x04
+   \   00000048   93000065                   STS     101,R16
+   \   0000004C   9ADD                       SBI     0x1B,0x05
+   \   0000004E   9ADE                       SBI     0x1B,0x06
+   \   00000050   9AD9                       SBI     0x1B,0x01
+   \   00000052   9ADA                       SBI     0x1B,0x02
+   \   00000054   91000062                   LDS     R16,98
+   \   00000058   6001                       ORI     R16,0x01
+   \   0000005A   93000062                   STS     98,R16
+   \   0000005E   6002                       ORI     R16,0x02
+   \   00000060   93000062                   STS     98,R16
+   \   00000064   B707                       IN      R16,0x37
+   \   00000066   6100                       ORI     R16,0x10
+   \   00000068   BF07                       OUT     0x37,R16
+   \   0000006A   E001                       LDI     R16,1
+   \   0000006C   BD0E                       OUT     0x2E,R16
+   \   0000006E   E003                       LDI     R16,3
+   \   00000070   E010                       LDI     R17,0
+   \   00000072   BD1D                       OUT     0x2D,R17
+   \   00000074   BD0C                       OUT     0x2C,R16
+   \   00000076   E704                       LDI     R16,116
+   \   00000078   E013                       LDI     R17,3
+   \   0000007A   BD1B                       OUT     0x2B,R17
+   \   0000007C   BD0A                       OUT     0x2A,R16
+   \   0000007E   E001                       LDI     R16,1
+   \   00000080   9300....                   STS     flag,R16
+   \   00000084   E100                       LDI     R16,16
+   \   00000086   BF06                       OUT     0x36,R16
+   \   00000088   FA40                       BST     R4,0
+   \   0000008A   F436                       BRTC    ??w1_byte_wr_2
+   \   0000008C   91000065                   LDS     R16,101
+   \   00000090   7F0B                       ANDI    R16,0xFB
+   \   00000092   93000065                   STS     101,R16
+   \   00000096   9ADF                       SBI     0x1B,0x07
+   \                     ??w1_byte_wr_2:
+   \   00000098   FA41                       BST     R4,1
+   \   0000009A   F416                       BRTC    ??w1_byte_wr_3
+   \   0000009C   98DE                       CBI     0x1B,0x06
+   \   0000009E   9ADD                       SBI     0x1B,0x05
+   \                     ??w1_byte_wr_3:
+   \   000000A0   FA42                       BST     R4,2
+   \   000000A2   F416                       BRTC    ??w1_byte_wr_4
+   \   000000A4   98DA                       CBI     0x1B,0x02
+   \   000000A6   9AD9                       SBI     0x1B,0x01
+   \                     ??w1_byte_wr_4:
+   \   000000A8   FA43                       BST     R4,3
+   \   000000AA   F446                       BRTC    ??w1_byte_wr_5
+   \   000000AC   91000062                   LDS     R16,98
+   \   000000B0   7F0D                       ANDI    R16,0xFD
+   \   000000B2   93000062                   STS     98,R16
+   \   000000B6   6001                       ORI     R16,0x01
+   \   000000B8   93000062                   STS     98,R16
+   \                     ??w1_byte_wr_5:
+   \   000000BC   B50C                       IN      R16,0x2C
+   \   000000BE   B51D                       IN      R17,0x2D
+   \   000000C0   3C03                       CPI     R16,195
+   \   000000C2   E020                       LDI     R18,0
+   \   000000C4   4010                       SBCI    R17,0
+   \   000000C6   F3D0                       BRCS    ??w1_byte_wr_5
+   \   000000C8   B101                       IN      R16,0x01
+   \   000000CA   B101                       IN      R16,0x01
+   \   000000CC   B101                       IN      R16,0x01
+   \   000000CE   B101                       IN      R16,0x01
+   \   000000D0   9478                       SEI
+   \                     ??w1_byte_wr_6:
+   \   000000D2   9100....                   LDS     R16,flag
+   \   000000D6   2300                       TST     R16
+   \   000000D8   F7E1                       BRNE    ??w1_byte_wr_6
+   \   000000DA   94F8                       CLI
+   \   000000DC   E00D                       LDI     R16,13
+   \   000000DE   E012                       LDI     R17,2
+   \   000000E0   BD1B                       OUT     0x2B,R17
+   \   000000E2   BD0A                       OUT     0x2A,R16
+   \   000000E4   E001                       LDI     R16,1
+   \   000000E6   9300....                   STS     flag,R16
+   \   000000EA   BD2D                       OUT     0x2D,R18
+   \   000000EC   BD2C                       OUT     0x2C,R18
+   \   000000EE   9478                       SEI
+   \                     ??w1_byte_wr_7:
+   \   000000F0   9100....                   LDS     R16,flag
+   \   000000F4   2300                       TST     R16
+   \   000000F6   F7E1                       BRNE    ??w1_byte_wr_7
+   \   000000F8   E00F                       LDI     R16,15
+   \   000000FA   9300....                   STS     f_presence,R16
+   \   000000FE   EF00                       LDI     R16,240
+   \   00000100   BF08                       OUT     0x38,R16
+   \   00000102   B709                       IN      R16,0x39
+   \   00000104   6F00                       ORI     R16,0xF0
+   \   00000106   BF09                       OUT     0x39,R16
+    209              byte[0] >>= 1;
+   \   00000108   01FD                       MOVW    R31 : R30,R27 : R26
+   \   0000010A   8100                       LD      R16,Z
+   \   0000010C   9506                       LSR     R16
+   \   0000010E   8300                       ST      Z,R16
+    210              byte[1] >>= 1;
+   \   00000110   8101                       LDD     R16,Z+1
+   \   00000112   9506                       LSR     R16
+   \   00000114   8301                       STD     Z+1,R16
+    211              byte[2] >>= 1;
+   \   00000116   8102                       LDD     R16,Z+2
+   \   00000118   9506                       LSR     R16
+   \   0000011A   8302                       STD     Z+2,R16
+    212              byte[3] >>= 1;
+   \   0000011C   8103                       LDD     R16,Z+3
+   \   0000011E   9506                       LSR     R16
+   \   00000120   8303                       STD     Z+3,R16
+    213            }  
+   \   00000122   958A                       DEC     R24
+   \   00000124   F009                       BREQ    $+2+2
+   \   00000126   CF74                       RJMP    ??w1_byte_wr_0
+    214              b = (byte[0] & 0x01) | ((byte[1] << 1) & 0x02) \
+    215                    | ((byte[2] << 2) & 0x04) | ((byte[3] << 3) & 0x08);
+   \   00000128   910C                       LD      R16,X
+   \   0000012A   7001                       ANDI    R16,0x01
+   \   0000012C   8111                       LDD     R17,Z+1
+   \   0000012E   FB10                       BST     R17,0
+   \   00000130   E010                       LDI     R17,0
+   \   00000132   F911                       BLD     R17,1
+   \   00000134   2B10                       OR      R17,R16
+   \   00000136   8102                       LDD     R16,Z+2
+   \   00000138   FB00                       BST     R16,0
+   \   0000013A   E000                       LDI     R16,0
+   \   0000013C   F902                       BLD     R16,2
+   \   0000013E   2B01                       OR      R16,R17
+   \   00000140   8113                       LDD     R17,Z+3
+   \   00000142   FB10                       BST     R17,0
+   \   00000144   E080                       LDI     R24,0
+   \   00000146   F983                       BLD     R24,3
+   \   00000148   2B80                       OR      R24,R16
+    216             if(convertf)    w1_bit_io( b,2 );// после выдачи бита будет включено питание 
+   \   0000014A   2FA8                       MOV     R26,R24
+   \   0000014C   FBA1                       BST     R26,1
+   \   0000014E   E0A0                       LDI     R26,0
+   \   00000150   F9A0                       BLD     R26,0
+   \   00000152   2FB8                       MOV     R27,R24
+   \   00000154   FBB2                       BST     R27,2
+   \   00000156   E0B0                       LDI     R27,0
+   \   00000158   F9B0                       BLD     R27,0
+   \   0000015A   2E48                       MOV     R4,R24
+   \   0000015C   FA43                       BST     R4,3
+   \   0000015E   2444                       CLR     R4
+   \   00000160   F840                       BLD     R4,0
+   \   00000162   2399                       TST     R25
+   \   00000164   9100....                   LDS     R16,f_presence
+   \   00000168   F409                       BRNE    $+2+2
+   \   0000016A   C05A                       RJMP    ??w1_byte_wr_8
+   \   0000016C   300F                       CPI     R16,15
+   \   0000016E   F009                       BREQ    ??w1_byte_wr_9
+   \   00000170   ....                       RCALL   kzhandle
+   \                     ??w1_byte_wr_9:
+   \   00000172   94F8                       CLI
+   \   00000174   9ADF                       SBI     0x1B,0x07
+   \   00000176   91000065                   LDS     R16,101
+   \   0000017A   6004                       ORI     R16,0x04
+   \   0000017C   93000065                   STS     101,R16
+   \   00000180   9ADD                       SBI     0x1B,0x05
+   \   00000182   9ADE                       SBI     0x1B,0x06
+   \   00000184   9AD9                       SBI     0x1B,0x01
+   \   00000186   9ADA                       SBI     0x1B,0x02
+   \   00000188   91000062                   LDS     R16,98
+   \   0000018C   6001                       ORI     R16,0x01
+   \   0000018E   93000062                   STS     98,R16
+   \   00000192   6002                       ORI     R16,0x02
+   \   00000194   93000062                   STS     98,R16
+   \   00000198   B707                       IN      R16,0x37
+   \   0000019A   6100                       ORI     R16,0x10
+   \   0000019C   BF07                       OUT     0x37,R16
+   \   0000019E   E001                       LDI     R16,1
+   \   000001A0   BD0E                       OUT     0x2E,R16
+   \   000001A2   E003                       LDI     R16,3
+   \   000001A4   E010                       LDI     R17,0
+   \   000001A6   BD1D                       OUT     0x2D,R17
+   \   000001A8   BD0C                       OUT     0x2C,R16
+   \   000001AA   E704                       LDI     R16,116
+   \   000001AC   E013                       LDI     R17,3
+   \   000001AE   BD1B                       OUT     0x2B,R17
+   \   000001B0   BD0A                       OUT     0x2A,R16
+   \   000001B2   E002                       LDI     R16,2
+   \   000001B4   9300....                   STS     flag,R16
+   \   000001B8   E100                       LDI     R16,16
+   \   000001BA   BF06                       OUT     0x36,R16
+   \   000001BC   FB80                       BST     R24,0
+   \   000001BE   F436                       BRTC    ??w1_byte_wr_10
+   \   000001C0   91000065                   LDS     R16,101
+   \   000001C4   7F0B                       ANDI    R16,0xFB
+   \   000001C6   93000065                   STS     101,R16
+   \   000001CA   9ADF                       SBI     0x1B,0x07
+   \                     ??w1_byte_wr_10:
+   \   000001CC   23AA                       TST     R26
+   \   000001CE   F011                       BREQ    ??w1_byte_wr_11
+   \   000001D0   98DE                       CBI     0x1B,0x06
+   \   000001D2   9ADD                       SBI     0x1B,0x05
+   \                     ??w1_byte_wr_11:
+   \   000001D4   23BB                       TST     R27
+   \   000001D6   F011                       BREQ    ??w1_byte_wr_12
+   \   000001D8   98DA                       CBI     0x1B,0x02
+   \   000001DA   9AD9                       SBI     0x1B,0x01
+   \                     ??w1_byte_wr_12:
+   \   000001DC   2044                       TST     R4
+   \   000001DE   F041                       BREQ    ??w1_byte_wr_13
+   \   000001E0   91000062                   LDS     R16,98
+   \   000001E4   7F0D                       ANDI    R16,0xFD
+   \   000001E6   93000062                   STS     98,R16
+   \   000001EA   6001                       ORI     R16,0x01
+   \   000001EC   93000062                   STS     98,R16
+   \                     ??w1_byte_wr_13:
+   \   000001F0   B50C                       IN      R16,0x2C
+   \   000001F2   B51D                       IN      R17,0x2D
+   \   000001F4   3C03                       CPI     R16,195
+   \   000001F6   E020                       LDI     R18,0
+   \   000001F8   4010                       SBCI    R17,0
+   \   000001FA   F3D0                       BRCS    ??w1_byte_wr_13
+   \   000001FC   B101                       IN      R16,0x01
+   \   000001FE   B101                       IN      R16,0x01
+   \   00000200   B101                       IN      R16,0x01
+   \   00000202   B101                       IN      R16,0x01
+   \   00000204   9478                       SEI
+   \   00000206   9100....                   LDS     R16,flag
+   \   0000020A   2300                       TST     R16
+   \   0000020C   F009                       BREQ    $+2+2
+   \   0000020E   C070                       RJMP    ??w1_byte_wr_14
+   \   00000210   94F8                       CLI
+   \   00000212   E00D                       LDI     R16,13
+   \   00000214   E012                       LDI     R17,2
+   \   00000216   BD1B                       OUT     0x2B,R17
+   \   00000218   BD0A                       OUT     0x2A,R16
+   \   0000021A   9310....                   STS     flag,R17
+   \   0000021E   C059                       RJMP    ??w1_byte_wr_15
+    217             else     w1_bit_io( b,1 );// будет включена только подтяжка       
+   \                     ??w1_byte_wr_8:
+   \   00000220   300F                       CPI     R16,15
+   \   00000222   F009                       BREQ    ??w1_byte_wr_16
+   \   00000224   ....                       RCALL   kzhandle
+   \                     ??w1_byte_wr_16:
+   \   00000226   94F8                       CLI
+   \   00000228   9ADF                       SBI     0x1B,0x07
+   \   0000022A   91000065                   LDS     R16,101
+   \   0000022E   6004                       ORI     R16,0x04
+   \   00000230   93000065                   STS     101,R16
+   \   00000234   9ADD                       SBI     0x1B,0x05
+   \   00000236   9ADE                       SBI     0x1B,0x06
+   \   00000238   9AD9                       SBI     0x1B,0x01
+   \   0000023A   9ADA                       SBI     0x1B,0x02
+   \   0000023C   91000062                   LDS     R16,98
+   \   00000240   6001                       ORI     R16,0x01
+   \   00000242   93000062                   STS     98,R16
+   \   00000246   6002                       ORI     R16,0x02
+   \   00000248   93000062                   STS     98,R16
+   \   0000024C   B707                       IN      R16,0x37
+   \   0000024E   6100                       ORI     R16,0x10
+   \   00000250   BF07                       OUT     0x37,R16
+   \   00000252   E001                       LDI     R16,1
+   \   00000254   BD0E                       OUT     0x2E,R16
+   \   00000256   E003                       LDI     R16,3
+   \   00000258   E010                       LDI     R17,0
+   \   0000025A   BD1D                       OUT     0x2D,R17
+   \   0000025C   BD0C                       OUT     0x2C,R16
+   \   0000025E   E704                       LDI     R16,116
+   \   00000260   E013                       LDI     R17,3
+   \   00000262   BD1B                       OUT     0x2B,R17
+   \   00000264   BD0A                       OUT     0x2A,R16
+   \   00000266   E001                       LDI     R16,1
+   \   00000268   9300....                   STS     flag,R16
+   \   0000026C   E100                       LDI     R16,16
+   \   0000026E   BF06                       OUT     0x36,R16
+   \   00000270   FB80                       BST     R24,0
+   \   00000272   F436                       BRTC    ??w1_byte_wr_17
+   \   00000274   91000065                   LDS     R16,101
+   \   00000278   7F0B                       ANDI    R16,0xFB
+   \   0000027A   93000065                   STS     101,R16
+   \   0000027E   9ADF                       SBI     0x1B,0x07
+   \                     ??w1_byte_wr_17:
+   \   00000280   23AA                       TST     R26
+   \   00000282   F011                       BREQ    ??w1_byte_wr_18
+   \   00000284   98DE                       CBI     0x1B,0x06
+   \   00000286   9ADD                       SBI     0x1B,0x05
+   \                     ??w1_byte_wr_18:
+   \   00000288   23BB                       TST     R27
+   \   0000028A   F011                       BREQ    ??w1_byte_wr_19
+   \   0000028C   98DA                       CBI     0x1B,0x02
+   \   0000028E   9AD9                       SBI     0x1B,0x01
+   \                     ??w1_byte_wr_19:
+   \   00000290   2044                       TST     R4
+   \   00000292   F041                       BREQ    ??w1_byte_wr_20
+   \   00000294   91000062                   LDS     R16,98
+   \   00000298   7F0D                       ANDI    R16,0xFD
+   \   0000029A   93000062                   STS     98,R16
+   \   0000029E   6001                       ORI     R16,0x01
+   \   000002A0   93000062                   STS     98,R16
+   \                     ??w1_byte_wr_20:
+   \   000002A4   B50C                       IN      R16,0x2C
+   \   000002A6   B51D                       IN      R17,0x2D
+   \   000002A8   3C03                       CPI     R16,195
+   \   000002AA   E020                       LDI     R18,0
+   \   000002AC   4010                       SBCI    R17,0
+   \   000002AE   F3D0                       BRCS    ??w1_byte_wr_20
+   \   000002B0   B101                       IN      R16,0x01
+   \   000002B2   B101                       IN      R16,0x01
+   \   000002B4   B101                       IN      R16,0x01
+   \   000002B6   B101                       IN      R16,0x01
+   \   000002B8   9478                       SEI
+   \                     ??w1_byte_wr_21:
+   \   000002BA   9100....                   LDS     R16,flag
+   \   000002BE   2300                       TST     R16
+   \   000002C0   F7E1                       BRNE    ??w1_byte_wr_21
+   \   000002C2   94F8                       CLI
+   \   000002C4   E00D                       LDI     R16,13
+   \   000002C6   E012                       LDI     R17,2
+   \   000002C8   BD1B                       OUT     0x2B,R17
+   \   000002CA   BD0A                       OUT     0x2A,R16
+   \   000002CC   E001                       LDI     R16,1
+   \   000002CE   9300....                   STS     flag,R16
+   \                     ??w1_byte_wr_15:
+   \   000002D2   BD2D                       OUT     0x2D,R18
+   \   000002D4   BD2C                       OUT     0x2C,R18
+   \   000002D6   9478                       SEI
+   \                     ??w1_byte_wr_22:
+   \   000002D8   9100....                   LDS     R16,flag
+   \   000002DC   2300                       TST     R16
+   \   000002DE   F7E1                       BRNE    ??w1_byte_wr_22
+   \   000002E0   E00F                       LDI     R16,15
+   \   000002E2   9300....                   STS     f_presence,R16
+   \   000002E6   EF00                       LDI     R16,240
+   \   000002E8   BF08                       OUT     0x38,R16
+   \   000002EA   B709                       IN      R16,0x39
+   \   000002EC   6F00                       ORI     R16,0xF0
+   \   000002EE   BF09                       OUT     0x39,R16
+    218          }
+   \                     ??w1_byte_wr_14:
+   \   000002F0                              REQUIRE ?Subroutine1
+   \   000002F0                      ;               // Fall through to label ?Subroutine1
+
+   \                                 In segment CODE, align 2, keep-with-next
+   \                     ?Subroutine1:
+   \   00000000   9189                       LD      R24,Y+
+   \   00000002   9199                       LD      R25,Y+
+   \   00000004   91A9                       LD      R26,Y+
+   \   00000006   91B9                       LD      R27,Y+
+   \   00000008   9049                       LD      R4,Y+
+   \   0000000A   9508                       RET
+    219          /*****************************************
+    220          w1_byte_rd
+    221          channel4 : channel3 : channel2 : channel1
+    222          *****************************************/
+
+   \                                 In segment CODE, align 2, keep-with-next
+    223          void w1_byte_rd( unsigned char byte[4])
+   \                     w1_byte_rd:
+    224          {
+   \   00000000   93BA                       ST      -Y,R27
+   \   00000002   93AA                       ST      -Y,R26
+   \   00000004   939A                       ST      -Y,R25
+   \   00000006   938A                       ST      -Y,R24
+   \   00000008   01D8                       MOVW    R27 : R26,R17 : R16
+    225            //return w1_byte_wr( 0xFF );
+    226            unsigned char i = 8, j;
+   \   0000000A   E088                       LDI     R24,8
+    227            do{
+    228              j = w1_bit_io( 0x0f,1 );
+   \                     ??w1_byte_rd_0:
+   \   0000000C   E09F                       LDI     R25,15
+   \   0000000E   9100....                   LDS     R16,f_presence
+   \   00000012   300F                       CPI     R16,15
+   \   00000014   F009                       BREQ    ??w1_byte_rd_1
+   \   00000016   ....                       RCALL   kzhandle
+   \                     ??w1_byte_rd_1:
+   \   00000018   94F8                       CLI
+   \   0000001A   9ADF                       SBI     0x1B,0x07
+   \   0000001C   91000065                   LDS     R16,101
+   \   00000020   6004                       ORI     R16,0x04
+   \   00000022   93000065                   STS     101,R16
+   \   00000026   9ADD                       SBI     0x1B,0x05
+   \   00000028   9ADE                       SBI     0x1B,0x06
+   \   0000002A   9AD9                       SBI     0x1B,0x01
+   \   0000002C   9ADA                       SBI     0x1B,0x02
+   \   0000002E   91000062                   LDS     R16,98
+   \   00000032   6001                       ORI     R16,0x01
+   \   00000034   93000062                   STS     98,R16
+   \   00000038   6002                       ORI     R16,0x02
+   \   0000003A   93000062                   STS     98,R16
+   \   0000003E   B707                       IN      R16,0x37
+   \   00000040   6100                       ORI     R16,0x10
+   \   00000042   BF07                       OUT     0x37,R16
+   \   00000044   E001                       LDI     R16,1
+   \   00000046   BD0E                       OUT     0x2E,R16
+   \   00000048   E003                       LDI     R16,3
+   \   0000004A   E010                       LDI     R17,0
+   \   0000004C   BD1D                       OUT     0x2D,R17
+   \   0000004E   BD0C                       OUT     0x2C,R16
+   \   00000050   E704                       LDI     R16,116
+   \   00000052   E013                       LDI     R17,3
+   \   00000054   BD1B                       OUT     0x2B,R17
+   \   00000056   BD0A                       OUT     0x2A,R16
+   \   00000058   E001                       LDI     R16,1
+   \   0000005A   9300....                   STS     flag,R16
+   \   0000005E   E100                       LDI     R16,16
+   \   00000060   BF06                       OUT     0x36,R16
+   \   00000062   91000065                   LDS     R16,101
+   \   00000066   7F0B                       ANDI    R16,0xFB
+   \   00000068   93000065                   STS     101,R16
+   \   0000006C   9ADF                       SBI     0x1B,0x07
+   \   0000006E   98DE                       CBI     0x1B,0x06
+   \   00000070   9ADD                       SBI     0x1B,0x05
+   \   00000072   98DA                       CBI     0x1B,0x02
+   \   00000074   9AD9                       SBI     0x1B,0x01
+   \   00000076   91000062                   LDS     R16,98
+   \   0000007A   7F0D                       ANDI    R16,0xFD
+   \   0000007C   93000062                   STS     98,R16
+   \   00000080   6001                       ORI     R16,0x01
+   \   00000082   93000062                   STS     98,R16
+   \                     ??w1_byte_rd_2:
+   \   00000086   B50C                       IN      R16,0x2C
+   \   00000088   B51D                       IN      R17,0x2D
+   \   0000008A   3C03                       CPI     R16,195
+   \   0000008C   E020                       LDI     R18,0
+   \   0000008E   4010                       SBCI    R17,0
+   \   00000090   F3D0                       BRCS    ??w1_byte_rd_2
+   \   00000092   9B0F                       SBIS    0x01,0x07
+   \   00000094   E09E                       LDI     R25,14
+   \                     ??w1_byte_rd_3:
+   \   00000096   9B0E                       SBIS    0x01,0x06
+   \   00000098   7F9D                       ANDI    R25,0xFD
+   \                     ??w1_byte_rd_4:
+   \   0000009A   9B0D                       SBIS    0x01,0x05
+   \   0000009C   7F9B                       ANDI    R25,0xFB
+   \                     ??w1_byte_rd_5:
+   \   0000009E   9B0C                       SBIS    0x01,0x04
+   \   000000A0   7F97                       ANDI    R25,0xF7
+   \                     ??w1_byte_rd_6:
+   \   000000A2   9478                       SEI
+   \                     ??w1_byte_rd_7:
+   \   000000A4   9100....                   LDS     R16,flag
+   \   000000A8   2300                       TST     R16
+   \   000000AA   F7E1                       BRNE    ??w1_byte_rd_7
+   \   000000AC   94F8                       CLI
+   \   000000AE   E00D                       LDI     R16,13
+   \   000000B0   E012                       LDI     R17,2
+   \   000000B2   BD1B                       OUT     0x2B,R17
+   \   000000B4   BD0A                       OUT     0x2A,R16
+   \   000000B6   E001                       LDI     R16,1
+   \   000000B8   9300....                   STS     flag,R16
+   \   000000BC   BD2D                       OUT     0x2D,R18
+   \   000000BE   BD2C                       OUT     0x2C,R18
+   \   000000C0   9478                       SEI
+   \                     ??w1_byte_rd_8:
+   \   000000C2   9100....                   LDS     R16,flag
+   \   000000C6   2300                       TST     R16
+   \   000000C8   F7E1                       BRNE    ??w1_byte_rd_8
+   \   000000CA   E00F                       LDI     R16,15
+   \   000000CC   9300....                   STS     f_presence,R16
+   \   000000D0   EF00                       LDI     R16,240
+   \   000000D2   BF08                       OUT     0x38,R16
+   \   000000D4   B709                       IN      R16,0x39
+   \   000000D6   6F00                       ORI     R16,0xF0
+   \   000000D8   BF09                       OUT     0x39,R16
+    229              byte[0] >>= 1;
+   \   000000DA   910C                       LD      R16,X
+   \   000000DC   9506                       LSR     R16
+   \   000000DE   930C                       ST      X,R16
+    230              byte[1] >>= 1;
+   \   000000E0   01FD                       MOVW    R31 : R30,R27 : R26
+   \   000000E2   8101                       LDD     R16,Z+1
+   \   000000E4   9506                       LSR     R16
+   \   000000E6   8301                       STD     Z+1,R16
+    231              byte[2] >>= 1;
+   \   000000E8   8102                       LDD     R16,Z+2
+   \   000000EA   9506                       LSR     R16
+   \   000000EC   8302                       STD     Z+2,R16
+    232              byte[3] >>= 1;
+   \   000000EE   8103                       LDD     R16,Z+3
+   \   000000F0   9506                       LSR     R16
+   \   000000F2   8303                       STD     Z+3,R16
+    233              if (j & 0x01) byte[0] |= 0x80;
+   \   000000F4   FB90                       BST     R25,0
+   \   000000F6   F41E                       BRTC    ??w1_byte_rd_9
+   \   000000F8   910C                       LD      R16,X
+   \   000000FA   6800                       ORI     R16,0x80
+   \   000000FC   930C                       ST      X,R16
+    234              if (j & 0x02) byte[1] |= 0x80;
+   \                     ??w1_byte_rd_9:
+   \   000000FE   FB91                       BST     R25,1
+   \   00000100   F41E                       BRTC    ??w1_byte_rd_10
+   \   00000102   8101                       LDD     R16,Z+1
+   \   00000104   6800                       ORI     R16,0x80
+   \   00000106   8301                       STD     Z+1,R16
+    235              if (j & 0x04) byte[2] |= 0x80;
+   \                     ??w1_byte_rd_10:
+   \   00000108   FB92                       BST     R25,2
+   \   0000010A   F41E                       BRTC    ??w1_byte_rd_11
+   \   0000010C   8102                       LDD     R16,Z+2
+   \   0000010E   6800                       ORI     R16,0x80
+   \   00000110   8302                       STD     Z+2,R16
+    236              if (j & 0x08) byte[3] |= 0x80;
+   \                     ??w1_byte_rd_11:
+   \   00000112   FB93                       BST     R25,3
+   \   00000114   F41E                       BRTC    ??w1_byte_rd_12
+   \   00000116   8103                       LDD     R16,Z+3
+   \   00000118   6800                       ORI     R16,0x80
+   \   0000011A   8303                       STD     Z+3,R16
+    237            }while( --i );
+   \                     ??w1_byte_rd_12:
+   \   0000011C   958A                       DEC     R24
+   \   0000011E   F009                       BREQ    $+2+2
+   \   00000120   CF75                       RJMP    ??w1_byte_rd_0
+    238          }
+   \   00000122   9189                       LD      R24,Y+
+   \   00000124   9199                       LD      R25,Y+
+   \   00000126   91A9                       LD      R26,Y+
+   \   00000128   91B9                       LD      R27,Y+
+   \   0000012A   9508                       RET
+    239          
+
+   \                                 In segment CODE, align 2, keep-with-next
+    240          unsigned char w1_rom_search( unsigned char diff, unsigned char  *id , unsigned char chn)
+   \                     w1_rom_search:
+    241          {
+   \   00000000   927A                       ST      -Y,R7
+   \   00000002   926A                       ST      -Y,R6
+   \   00000004   925A                       ST      -Y,R5
+   \   00000006   924A                       ST      -Y,R4
+   \   00000008   93BA                       ST      -Y,R27
+   \   0000000A   93AA                       ST      -Y,R26
+   \   0000000C   939A                       ST      -Y,R25
+   \   0000000E   938A                       ST      -Y,R24
+   \   00000010                              REQUIRE ?Register_R4_is_cg_reg
+   \   00000010                              REQUIRE ?Register_R5_is_cg_reg
+   \   00000010                              REQUIRE ?Register_R6_is_cg_reg
+   \   00000010                              REQUIRE ?Register_R7_is_cg_reg
+   \   00000010   9724                       SBIW    R29 : R28,4
+   \   00000012   2F80                       MOV     R24,R16
+   \   00000014   01D9                       MOVW    R27 : R26,R19 : R18
+   \   00000016   2F91                       MOV     R25,R17
+    242            unsigned char i, j, next_diff;
+    243            unsigned char b, sbyte[4];
+    244            
+    245            //chn = (1<<(chn-1));
+    246          
+    247            if( w1_reset(chn) & chn)
+   \   00000018   2F01                       MOV     R16,R17
+   \   0000001A   ....                       RCALL   w1_reset
+   \   0000001C   2309                       AND     R16,R25
+   \   0000001E   F011                       BREQ    ??w1_rom_search_0
+    248              return PRESENCE_ERR;			// error, no device found
+   \   00000020   EF0F                       LDI     R16,255
+   \   00000022   C167                       RJMP    ??w1_rom_search_1
+    249          //    return PRESENCE_ERR;
+    250            sbyte[0] = SEARCH_ROM; sbyte[1] =SEARCH_ROM;sbyte[2] =SEARCH_ROM; sbyte[3] =SEARCH_ROM;
+   \                     ??w1_rom_search_0:
+   \   00000024   EF00                       LDI     R16,240
+   \   00000026   8308                       ST      Y,R16
+   \   00000028   8309                       STD     Y+1,R16
+   \   0000002A   830A                       STD     Y+2,R16
+   \   0000002C   830B                       STD     Y+3,R16
+    251            w1_byte_wr( sbyte,0 );	        // ROM search command
+   \   0000002E   E020                       LDI     R18,0
+   \   00000030   018E                       MOVW    R17 : R16,R29 : R28
+   \   00000032   ....                       RCALL   w1_byte_wr
+    252            next_diff = LAST_DEVICE;			// unchanged on last device
+   \   00000034   2466                       CLR     R6
+    253            i = 8 * 8;					// 8 bytes
+   \   00000036   E400                       LDI     R16,64
+   \   00000038   2E40                       MOV     R4,R16
+    254            do{
+    255              j = 8;					// 8 bits
+   \                     ??w1_rom_search_2:
+   \   0000003A   E008                       LDI     R16,8
+   \   0000003C   2E50                       MOV     R5,R16
+    256              do{
+    257                b = w1_bit_io( 0x0f,1 ) & chn;		// read bit
+   \                     ??w1_rom_search_3:
+   \   0000003E   E00F                       LDI     R16,15
+   \   00000040   2E70                       MOV     R7,R16
+   \   00000042   9100....                   LDS     R16,f_presence
+   \   00000046   300F                       CPI     R16,15
+   \   00000048   F009                       BREQ    ??w1_rom_search_4
+   \   0000004A   ....                       RCALL   kzhandle
+   \                     ??w1_rom_search_4:
+   \   0000004C   94F8                       CLI
+   \   0000004E   9ADF                       SBI     0x1B,0x07
+   \   00000050   91000065                   LDS     R16,101
+   \   00000054   6004                       ORI     R16,0x04
+   \   00000056   93000065                   STS     101,R16
+   \   0000005A   9ADD                       SBI     0x1B,0x05
+   \   0000005C   9ADE                       SBI     0x1B,0x06
+   \   0000005E   9AD9                       SBI     0x1B,0x01
+   \   00000060   9ADA                       SBI     0x1B,0x02
+   \   00000062   91000062                   LDS     R16,98
+   \   00000066   6001                       ORI     R16,0x01
+   \   00000068   93000062                   STS     98,R16
+   \   0000006C   6002                       ORI     R16,0x02
+   \   0000006E   93000062                   STS     98,R16
+   \   00000072   B707                       IN      R16,0x37
+   \   00000074   6100                       ORI     R16,0x10
+   \   00000076   BF07                       OUT     0x37,R16
+   \   00000078   E001                       LDI     R16,1
+   \   0000007A   BD0E                       OUT     0x2E,R16
+   \   0000007C   E003                       LDI     R16,3
+   \   0000007E   E010                       LDI     R17,0
+   \   00000080   BD1D                       OUT     0x2D,R17
+   \   00000082   BD0C                       OUT     0x2C,R16
+   \   00000084   E704                       LDI     R16,116
+   \   00000086   E013                       LDI     R17,3
+   \   00000088   BD1B                       OUT     0x2B,R17
+   \   0000008A   BD0A                       OUT     0x2A,R16
+   \   0000008C   E001                       LDI     R16,1
+   \   0000008E   9300....                   STS     flag,R16
+   \   00000092   E100                       LDI     R16,16
+   \   00000094   BF06                       OUT     0x36,R16
+   \   00000096   91000065                   LDS     R16,101
+   \   0000009A   7F0B                       ANDI    R16,0xFB
+   \   0000009C   93000065                   STS     101,R16
+   \   000000A0   9ADF                       SBI     0x1B,0x07
+   \   000000A2   98DE                       CBI     0x1B,0x06
+   \   000000A4   9ADD                       SBI     0x1B,0x05
+   \   000000A6   98DA                       CBI     0x1B,0x02
+   \   000000A8   9AD9                       SBI     0x1B,0x01
+   \   000000AA   91000062                   LDS     R16,98
+   \   000000AE   7F0D                       ANDI    R16,0xFD
+   \   000000B0   93000062                   STS     98,R16
+   \   000000B4   6001                       ORI     R16,0x01
+   \   000000B6   93000062                   STS     98,R16
+   \                     ??w1_rom_search_5:
+   \   000000BA   B50C                       IN      R16,0x2C
+   \   000000BC   B51D                       IN      R17,0x2D
+   \   000000BE   3C03                       CPI     R16,195
+   \   000000C0   E020                       LDI     R18,0
+   \   000000C2   4010                       SBCI    R17,0
+   \   000000C4   F3D0                       BRCS    ??w1_rom_search_5
+   \   000000C6   990F                       SBIC    0x01,0x07
+   \   000000C8   C002                       RJMP    ??w1_rom_search_6
+   \   000000CA   E00E                       LDI     R16,14
+   \   000000CC   2E70                       MOV     R7,R16
+   \                     ??w1_rom_search_6:
+   \   000000CE   990E                       SBIC    0x01,0x06
+   \   000000D0   C002                       RJMP    ??w1_rom_search_7
+   \   000000D2   94E8                       CLT
+   \   000000D4   F871                       BLD     R7,1
+   \                     ??w1_rom_search_7:
+   \   000000D6   990D                       SBIC    0x01,0x05
+   \   000000D8   C002                       RJMP    ??w1_rom_search_8
+   \   000000DA   94E8                       CLT
+   \   000000DC   F872                       BLD     R7,2
+   \                     ??w1_rom_search_8:
+   \   000000DE   990C                       SBIC    0x01,0x04
+   \   000000E0   C002                       RJMP    ??w1_rom_search_9
+   \   000000E2   94E8                       CLT
+   \   000000E4   F873                       BLD     R7,3
+   \                     ??w1_rom_search_9:
+   \   000000E6   9478                       SEI
+   \                     ??w1_rom_search_10:
+   \   000000E8   9100....                   LDS     R16,flag
+   \   000000EC   2300                       TST     R16
+   \   000000EE   F7E1                       BRNE    ??w1_rom_search_10
+   \   000000F0   94F8                       CLI
+   \   000000F2   E00D                       LDI     R16,13
+   \   000000F4   E012                       LDI     R17,2
+   \   000000F6   BD1B                       OUT     0x2B,R17
+   \   000000F8   BD0A                       OUT     0x2A,R16
+   \   000000FA   E001                       LDI     R16,1
+   \   000000FC   9300....                   STS     flag,R16
+   \   00000100   BD2D                       OUT     0x2D,R18
+   \   00000102   BD2C                       OUT     0x2C,R18
+   \   00000104   9478                       SEI
+   \                     ??w1_rom_search_11:
+   \   00000106   9100....                   LDS     R16,flag
+   \   0000010A   2300                       TST     R16
+   \   0000010C   F7E1                       BRNE    ??w1_rom_search_11
+   \   0000010E   E00F                       LDI     R16,15
+   \   00000110   9300....                   STS     f_presence,R16
+   \   00000114   EF00                       LDI     R16,240
+   \   00000116   BF08                       OUT     0x38,R16
+   \   00000118   B709                       IN      R16,0x39
+   \   0000011A   6F00                       ORI     R16,0xF0
+   \   0000011C   BF09                       OUT     0x39,R16
+   \   0000011E   2F49                       MOV     R20,R25
+   \   00000120   2147                       AND     R20,R7
+    258                if( w1_bit_io( 0x0f,1 ) & chn){			// read complement bit
+   \   00000122   E00F                       LDI     R16,15
+   \   00000124   94F8                       CLI
+   \   00000126   9ADF                       SBI     0x1B,0x07
+   \   00000128   91100065                   LDS     R17,101
+   \   0000012C   6014                       ORI     R17,0x04
+   \   0000012E   93100065                   STS     101,R17
+   \   00000132   9ADD                       SBI     0x1B,0x05
+   \   00000134   9ADE                       SBI     0x1B,0x06
+   \   00000136   9AD9                       SBI     0x1B,0x01
+   \   00000138   9ADA                       SBI     0x1B,0x02
+   \   0000013A   91100062                   LDS     R17,98
+   \   0000013E   6011                       ORI     R17,0x01
+   \   00000140   93100062                   STS     98,R17
+   \   00000144   6012                       ORI     R17,0x02
+   \   00000146   93100062                   STS     98,R17
+   \   0000014A   B717                       IN      R17,0x37
+   \   0000014C   6110                       ORI     R17,0x10
+   \   0000014E   BF17                       OUT     0x37,R17
+   \   00000150   E011                       LDI     R17,1
+   \   00000152   BD1E                       OUT     0x2E,R17
+   \   00000154   E023                       LDI     R18,3
+   \   00000156   E030                       LDI     R19,0
+   \   00000158   BD3D                       OUT     0x2D,R19
+   \   0000015A   BD2C                       OUT     0x2C,R18
+   \   0000015C   E724                       LDI     R18,116
+   \   0000015E   E033                       LDI     R19,3
+   \   00000160   BD3B                       OUT     0x2B,R19
+   \   00000162   BD2A                       OUT     0x2A,R18
+   \   00000164   9310....                   STS     flag,R17
+   \   00000168   E110                       LDI     R17,16
+   \   0000016A   BF16                       OUT     0x36,R17
+   \   0000016C   91100065                   LDS     R17,101
+   \   00000170   7F1B                       ANDI    R17,0xFB
+   \   00000172   93100065                   STS     101,R17
+   \   00000176   9ADF                       SBI     0x1B,0x07
+   \   00000178   98DE                       CBI     0x1B,0x06
+   \   0000017A   9ADD                       SBI     0x1B,0x05
+   \   0000017C   98DA                       CBI     0x1B,0x02
+   \   0000017E   9AD9                       SBI     0x1B,0x01
+   \   00000180   91100062                   LDS     R17,98
+   \   00000184   7F1D                       ANDI    R17,0xFD
+   \   00000186   93100062                   STS     98,R17
+   \   0000018A   6011                       ORI     R17,0x01
+   \   0000018C   93100062                   STS     98,R17
+   \                     ??w1_rom_search_12:
+   \   00000190   B52C                       IN      R18,0x2C
+   \   00000192   B53D                       IN      R19,0x2D
+   \   00000194   3C23                       CPI     R18,195
+   \   00000196   4030                       SBCI    R19,0
+   \   00000198   F3D8                       BRCS    ??w1_rom_search_12
+   \   0000019A   9B0F                       SBIS    0x01,0x07
+   \   0000019C   E00E                       LDI     R16,14
+   \                     ??w1_rom_search_13:
+   \   0000019E   9B0E                       SBIS    0x01,0x06
+   \   000001A0   7F0D                       ANDI    R16,0xFD
+   \                     ??w1_rom_search_14:
+   \   000001A2   9B0D                       SBIS    0x01,0x05
+   \   000001A4   7F0B                       ANDI    R16,0xFB
+   \                     ??w1_rom_search_15:
+   \   000001A6   9B0C                       SBIS    0x01,0x04
+   \   000001A8   7F07                       ANDI    R16,0xF7
+   \                     ??w1_rom_search_16:
+   \   000001AA   9478                       SEI
+   \                     ??w1_rom_search_17:
+   \   000001AC   9110....                   LDS     R17,flag
+   \   000001B0   2311                       TST     R17
+   \   000001B2   F7E1                       BRNE    ??w1_rom_search_17
+   \   000001B4   94F8                       CLI
+   \   000001B6   E02D                       LDI     R18,13
+   \   000001B8   E032                       LDI     R19,2
+   \   000001BA   BD3B                       OUT     0x2B,R19
+   \   000001BC   BD2A                       OUT     0x2A,R18
+   \   000001BE   E011                       LDI     R17,1
+   \   000001C0   9310....                   STS     flag,R17
+   \   000001C4   E020                       LDI     R18,0
+   \   000001C6   BD2D                       OUT     0x2D,R18
+   \   000001C8   BD2C                       OUT     0x2C,R18
+   \   000001CA   9478                       SEI
+   \                     ??w1_rom_search_18:
+   \   000001CC   9110....                   LDS     R17,flag
+   \   000001D0   2311                       TST     R17
+   \   000001D2   F7E1                       BRNE    ??w1_rom_search_18
+   \   000001D4   E01F                       LDI     R17,15
+   \   000001D6   9310....                   STS     f_presence,R17
+   \   000001DA   EF10                       LDI     R17,240
+   \   000001DC   BF18                       OUT     0x38,R17
+   \   000001DE   B719                       IN      R17,0x39
+   \   000001E0   6F10                       ORI     R17,0xF0
+   \   000001E2   BF19                       OUT     0x39,R17
+   \   000001E4   2F19                       MOV     R17,R25
+   \   000001E6   2310                       AND     R17,R16
+   \   000001E8   F021                       BREQ    ??w1_rom_search_19
+    259          	if( b & chn )					// 11
+   \   000001EA   2344                       TST     R20
+   \   000001EC   F071                       BREQ    ??w1_rom_search_20
+    260          	  return DATA_ERR;			// data error
+   \   000001EE   EF0E                       LDI     R16,254
+   \   000001F0   C080                       RJMP    ??w1_rom_search_1
+    261                }
+    262                else
+    263                {
+    264          	if( ! (b & chn) )
+   \                     ??w1_rom_search_19:
+   \   000001F2   2344                       TST     R20
+   \   000001F4   F451                       BRNE    ??w1_rom_search_20
+    265          	{				// 00 = 2 devices
+    266          	  if( diff > i || ((*id & 1) && diff != i) )
+   \   000001F6   1648                       CP      R4,R24
+   \   000001F8   F030                       BRCS    ??w1_rom_search_21
+   \   000001FA   01FD                       MOVW    R31 : R30,R27 : R26
+   \   000001FC   8100                       LD      R16,Z
+   \   000001FE   FF00                       SBRS    R16,0
+   \   00000200   C004                       RJMP    ??w1_rom_search_20
+   \   00000202   1584                       CP      R24,R4
+   \   00000204   F011                       BREQ    ??w1_rom_search_20
+    267          	    {
+    268          	    b = chn;				// now 1
+   \                     ??w1_rom_search_21:
+   \   00000206   2F49                       MOV     R20,R25
+    269          	    next_diff = i;			// next pass 0
+   \   00000208   2C64                       MOV     R6,R4
+    270          	    }
+    271          	}
+    272                }
+    273                w1_bit_io( b,1 );     			// write bit
+   \                     ??w1_rom_search_20:
+   \   0000020A   94F8                       CLI
+   \   0000020C   9ADF                       SBI     0x1B,0x07
+   \   0000020E   91000065                   LDS     R16,101
+   \   00000212   6004                       ORI     R16,0x04
+   \   00000214   93000065                   STS     101,R16
+   \   00000218   9ADD                       SBI     0x1B,0x05
+   \   0000021A   9ADE                       SBI     0x1B,0x06
+   \   0000021C   9AD9                       SBI     0x1B,0x01
+   \   0000021E   9ADA                       SBI     0x1B,0x02
+   \   00000220   91000062                   LDS     R16,98
+   \   00000224   6001                       ORI     R16,0x01
+   \   00000226   93000062                   STS     98,R16
+   \   0000022A   6002                       ORI     R16,0x02
+   \   0000022C   93000062                   STS     98,R16
+   \   00000230   B707                       IN      R16,0x37
+   \   00000232   6100                       ORI     R16,0x10
+   \   00000234   BF07                       OUT     0x37,R16
+   \   00000236   E001                       LDI     R16,1
+   \   00000238   BD0E                       OUT     0x2E,R16
+   \   0000023A   E003                       LDI     R16,3
+   \   0000023C   BD2D                       OUT     0x2D,R18
+   \   0000023E   BD0C                       OUT     0x2C,R16
+   \   00000240   E704                       LDI     R16,116
+   \   00000242   E013                       LDI     R17,3
+   \   00000244   BD1B                       OUT     0x2B,R17
+   \   00000246   BD0A                       OUT     0x2A,R16
+   \   00000248   E001                       LDI     R16,1
+   \   0000024A   9300....                   STS     flag,R16
+   \   0000024E   E100                       LDI     R16,16
+   \   00000250   BF06                       OUT     0x36,R16
+   \   00000252   FB40                       BST     R20,0
+   \   00000254   F436                       BRTC    ??w1_rom_search_22
+   \   00000256   91000065                   LDS     R16,101
+   \   0000025A   7F0B                       ANDI    R16,0xFB
+   \   0000025C   93000065                   STS     101,R16
+   \   00000260   9ADF                       SBI     0x1B,0x07
+   \                     ??w1_rom_search_22:
+   \   00000262   FB41                       BST     R20,1
+   \   00000264   F416                       BRTC    ??w1_rom_search_23
+   \   00000266   98DE                       CBI     0x1B,0x06
+   \   00000268   9ADD                       SBI     0x1B,0x05
+   \                     ??w1_rom_search_23:
+   \   0000026A   FB42                       BST     R20,2
+   \   0000026C   F416                       BRTC    ??w1_rom_search_24
+   \   0000026E   98DA                       CBI     0x1B,0x02
+   \   00000270   9AD9                       SBI     0x1B,0x01
+   \                     ??w1_rom_search_24:
+   \   00000272   FB43                       BST     R20,3
+   \   00000274   F446                       BRTC    ??w1_rom_search_25
+   \   00000276   91000062                   LDS     R16,98
+   \   0000027A   7F0D                       ANDI    R16,0xFD
+   \   0000027C   93000062                   STS     98,R16
+   \   00000280   6001                       ORI     R16,0x01
+   \   00000282   93000062                   STS     98,R16
+   \                     ??w1_rom_search_25:
+   \   00000286   B50C                       IN      R16,0x2C
+   \   00000288   B51D                       IN      R17,0x2D
+   \   0000028A   3C03                       CPI     R16,195
+   \   0000028C   4010                       SBCI    R17,0
+   \   0000028E   F3D8                       BRCS    ??w1_rom_search_25
+   \   00000290   B101                       IN      R16,0x01
+   \   00000292   B101                       IN      R16,0x01
+   \   00000294   B101                       IN      R16,0x01
+   \   00000296   B101                       IN      R16,0x01
+   \   00000298   9478                       SEI
+   \                     ??w1_rom_search_26:
+   \   0000029A   9100....                   LDS     R16,flag
+   \   0000029E   2300                       TST     R16
+   \   000002A0   F7E1                       BRNE    ??w1_rom_search_26
+   \   000002A2   94F8                       CLI
+   \   000002A4   E00D                       LDI     R16,13
+   \   000002A6   BD3B                       OUT     0x2B,R19
+   \   000002A8   BD0A                       OUT     0x2A,R16
+   \   000002AA   E001                       LDI     R16,1
+   \   000002AC   9300....                   STS     flag,R16
+   \   000002B0   BD2D                       OUT     0x2D,R18
+   \   000002B2   BD2C                       OUT     0x2C,R18
+   \   000002B4   9478                       SEI
+   \                     ??w1_rom_search_27:
+   \   000002B6   9100....                   LDS     R16,flag
+   \   000002BA   2300                       TST     R16
+   \   000002BC   F7E1                       BRNE    ??w1_rom_search_27
+   \   000002BE   E00F                       LDI     R16,15
+   \   000002C0   9300....                   STS     f_presence,R16
+   \   000002C4   EF00                       LDI     R16,240
+   \   000002C6   BF08                       OUT     0x38,R16
+   \   000002C8   B709                       IN      R16,0x39
+   \   000002CA   6F00                       ORI     R16,0xF0
+   \   000002CC   BF09                       OUT     0x39,R16
+    274                *id >>= 1;
+   \   000002CE   910C                       LD      R16,X
+   \   000002D0   9506                       LSR     R16
+   \   000002D2   930C                       ST      X,R16
+    275                if( b & chn )					// store bit
+   \   000002D4   2F09                       MOV     R16,R25
+   \   000002D6   2304                       AND     R16,R20
+   \   000002D8   F019                       BREQ    ??w1_rom_search_28
+    276          	*id |= 0x80;
+   \   000002DA   910C                       LD      R16,X
+   \   000002DC   6800                       ORI     R16,0x80
+   \   000002DE   930C                       ST      X,R16
+    277                i--;
+   \                     ??w1_rom_search_28:
+   \   000002E0   944A                       DEC     R4
+    278              }while( --j );
+   \   000002E2   945A                       DEC     R5
+   \   000002E4   F009                       BREQ    $+2+2
+   \   000002E6   CEAB                       RJMP    ??w1_rom_search_3
+    279              id++;					// next byte
+   \   000002E8   9611                       ADIW    R27 : R26,1
+    280            }while( i );
+   \   000002EA   2044                       TST     R4
+   \   000002EC   F009                       BREQ    $+2+2
+   \   000002EE   CEA5                       RJMP    ??w1_rom_search_2
+    281            return next_diff;				// to continue search
+   \   000002F0   2D06                       MOV     R16,R6
+   \                     ??w1_rom_search_1:
+   \   000002F2   9624                       ADIW    R29 : R28,4
+   \   000002F4   9189                       LD      R24,Y+
+   \   000002F6   9199                       LD      R25,Y+
+   \   000002F8   91A9                       LD      R26,Y+
+   \   000002FA   91B9                       LD      R27,Y+
+   \   000002FC   9049                       LD      R4,Y+
+   \   000002FE   9059                       LD      R5,Y+
+   \   00000300   9069                       LD      R6,Y+
+   \   00000302   9079                       LD      R7,Y+
+   \   00000304   9508                       RET
+    282          }
+    283          
+    284          
+
+   \                                 In segment CODE, align 2, keep-with-next
+    285          void w1_command( unsigned char command[4], unsigned char  *id[4] )
+   \                     w1_command:
+    286          {
+   \   00000000   924A                       ST      -Y,R4
+   \   00000002   93BA                       ST      -Y,R27
+   \   00000004   93AA                       ST      -Y,R26
+   \   00000006   939A                       ST      -Y,R25
+   \   00000008   938A                       ST      -Y,R24
+   \   0000000A                              REQUIRE ?Register_R4_is_cg_reg
+   \   0000000A   9724                       SBIW    R29 : R28,4
+   \   0000000C   01C8                       MOVW    R25 : R24,R17 : R16
+   \   0000000E   01D9                       MOVW    R27 : R26,R19 : R18
+    287            unsigned char i, sbyte[4];
+    288            w1_reset(0x0f);
+   \   00000010   E00F                       LDI     R16,15
+   \   00000012   ....                       RCALL   w1_reset
+    289            if( id )
+   \   00000014   2F0A                       MOV     R16,R26
+   \   00000016   2B0B                       OR      R16,R27
+   \   00000018   F089                       BREQ    ??w1_command_0
+    290            {
+    291              // to a single device
+    292              sbyte[0] = MATCH_ROM; sbyte[1] =MATCH_ROM;
+   \   0000001A   E505                       LDI     R16,85
+   \   0000001C   8308                       ST      Y,R16
+   \   0000001E   8309                       STD     Y+1,R16
+    293               sbyte[2] =MATCH_ROM; sbyte[3] =MATCH_ROM;
+   \   00000020   830A                       STD     Y+2,R16
+   \   00000022   830B                       STD     Y+3,R16
+    294              w1_byte_wr( sbyte,0 );	
+   \   00000024   E020                       LDI     R18,0
+   \   00000026   018E                       MOVW    R17 : R16,R29 : R28
+   \   00000028   ....                       RCALL   w1_byte_wr
+    295              i = 8;
+   \   0000002A   E008                       LDI     R16,8
+   \   0000002C   2E40                       MOV     R4,R16
+    296              do
+    297              {
+    298                w1_byte_wr( *id,0 );
+   \                     ??w1_command_1:
+   \   0000002E   E020                       LDI     R18,0
+   \   00000030   910D                       LD      R16,X+
+   \   00000032   911D                       LD      R17,X+
+   \   00000034   ....                       RCALL   w1_byte_wr
+    299                id++;
+    300              }
+    301              while( --i );
+   \   00000036   944A                       DEC     R4
+   \   00000038   F7D1                       BRNE    ??w1_command_1
+   \   0000003A   C008                       RJMP    ??w1_command_2
+    302            }
+    303            else
+    304            {
+    305              // to all devices
+    306              sbyte[0] = SKIP_ROM; sbyte[1] =SKIP_ROM;
+   \                     ??w1_command_0:
+   \   0000003C   EC0C                       LDI     R16,204
+   \   0000003E   8308                       ST      Y,R16
+   \   00000040   8309                       STD     Y+1,R16
+    307               sbyte[2] =SKIP_ROM; sbyte[3] =SKIP_ROM;
+   \   00000042   830A                       STD     Y+2,R16
+   \   00000044   830B                       STD     Y+3,R16
+    308              w1_byte_wr( sbyte,0 );
+   \   00000046   E020                       LDI     R18,0
+   \   00000048   018E                       MOVW    R17 : R16,R29 : R28
+   \   0000004A   ....                       RCALL   w1_byte_wr
+    309            }
+    310            if (command[0]==CONVERT_T) w1_byte_wr( command,1 );
+   \                     ??w1_command_2:
+   \   0000004C   01FC                       MOVW    R31 : R30,R25 : R24
+   \   0000004E   8100                       LD      R16,Z
+   \   00000050   3404                       CPI     R16,68
+   \   00000052   F411                       BRNE    ??w1_command_3
+   \   00000054   E021                       LDI     R18,1
+   \   00000056   C001                       RJMP    ??w1_command_4
+    311            else w1_byte_wr( command,0 );
+   \                     ??w1_command_3:
+   \   00000058   E020                       LDI     R18,0
+   \                     ??w1_command_4:
+   \   0000005A   018C                       MOVW    R17 : R16,R25 : R24
+   \   0000005C   ....                       RCALL   w1_byte_wr
+    312          }
+   \   0000005E   9624                       ADIW    R29 : R28,4
+   \   00000060   ....                       RJMP    ?Subroutine1
+
+   \                                 In segment INTVEC, offset 0x14, root
+   \   00000000   ........                   JMP     Int4
+
+   \                                 In segment INTVEC, offset 0x18, root
+   \   00000000   ........                   JMP     Int5
+
+   \                                 In segment INTVEC, offset 0x1c, root
+   \   00000000   ........                   JMP     Int6
+
+   \                                 In segment INTVEC, offset 0x20, root
+   \   00000000   ........                   JMP     Int7
+
+   \                                 In segment ABSOLUTE, at 0x21
+   \   union <unnamed> volatile __io _A_PINE
+   \                     _A_PINE:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x3b
+   \   union <unnamed> volatile __io _A_PORTA
+   \                     _A_PORTA:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x4a
+   \   union <unnamed> volatile __io _A_OCR1A
+   \                     _A_OCR1A:
+   \   00000000                              DS 2
+
+   \                                 In segment ABSOLUTE, at 0x4c
+   \   union <unnamed> volatile __io _A_TCNT1
+   \                     _A_TCNT1:
+   \   00000000                              DS 2
+
+   \                                 In segment ABSOLUTE, at 0x4e
+   \   union <unnamed> volatile __io _A_TCCR1B
+   \                     _A_TCCR1B:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x56
+   \   union <unnamed> volatile __io _A_TIFR
+   \                     _A_TIFR:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x57
+   \   union <unnamed> volatile __io _A_TIMSK
+   \                     _A_TIMSK:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x58
+   \   union <unnamed> volatile __io _A_EIFR
+   \                     _A_EIFR:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x59
+   \   union <unnamed> volatile __io _A_EIMSK
+   \                     _A_EIMSK:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x62
+   \   union <unnamed> volatile __io _A_PORTF
+   \                     _A_PORTF:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x65
+   \   union <unnamed> volatile __io _A_PORTG
+   \                     _A_PORTG:
+   \   00000000                              DS 1
+
+   Maximum stack usage in bytes:
+
+     Function        CSTACK RSTACK
+     --------        ------ ------
+     Int4                4      2
+     Int5                4      2
+     Int6                4      2
+     Int7                4      2
+     kzhandle           10      4
+       -> gettout       10      2
+       -> settout       10      2
+     w1_byte_rd          4      2
+       -> kzhandle       4      2
+     w1_byte_wr          5      2
+       -> kzhandle       5      2
+       -> kzhandle       5      2
+       -> kzhandle       5      2
+     w1_command          9      2
+       -> w1_reset       9      2
+       -> w1_byte_wr     9      2
+       -> w1_byte_wr     9      2
+       -> w1_byte_wr     9      2
+       -> w1_byte_wr     9      2
+       -> w1_byte_wr     9      2
+     w1_reset            2      2
+       -> kzhandle       2      2
+       -> delay_         2      2
+       -> delay_         2      2
+       -> delay_         2      2
+       -> kzhandle       2      2
+     w1_rom_search      12      2
+       -> w1_reset      12      2
+       -> w1_byte_wr    12      2
+       -> kzhandle      12      2
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+     f_presence        1
+     Int7             32
+     ?Subroutine0     14
+     Int6             32
+     Int5             30
+     Int4             40
+     kzhandle        198
+     w1_reset        158
+     w1_byte_wr      752
+     ?Subroutine1     12
+     w1_byte_rd      300
+     w1_rom_search   774
+     w1_command       98
+     _A_PINE           1
+     _A_PORTA          1
+     _A_OCR1A          2
+     _A_TCNT1          2
+     _A_TCCR1B         1
+     _A_TIFR           1
+     _A_TIMSK          1
+     _A_EIFR           1
+     _A_EIMSK          1
+     _A_PORTF          1
+     _A_PORTG          1
+      Others          23
+
+ 
+    13 bytes in segment ABSOLUTE
+ 2 440 bytes in segment CODE
+     7 bytes in segment INITTAB
+    16 bytes in segment INTVEC
+     1 byte  in segment NEAR_Z
+ 
+ 2 456 bytes of CODE memory (+  7 bytes shared)
+     1 byte  of DATA memory (+ 13 bytes shared)
+
+Errors: none
+Warnings: none

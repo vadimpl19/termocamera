@@ -1,0 +1,362 @@
+##############################################################################
+#                                                                            #
+# IAR Atmel AVR C/EC++ Compiler V3.20C/W32             07/Aug/2006  16:02:28 #
+# Copyright 1996-2004 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Source file  =  D:\temp\sys_msap01mk_dev0103\timeservice.c              #
+#    Command line =  --cpu=m128 -ms -o D:\temp\sys_msap01mk_dev0103\Release\ #
+#                    Obj\ -lCN D:\temp\sys_msap01mk_dev0103\Release\List\    #
+#                    -y --initializers_in_flash -s9                          #
+#                    -DENABLE_BIT_DEFINITIONS -e -I "F:\Program Files\IAR    #
+#                    Systems\Embedded Workbench 3.2\avr\INC\" -I             #
+#                    "F:\Program Files\IAR Systems\Embedded Workbench        #
+#                    3.2\avr\INC\CLIB\" --eeprom_size 4096                   #
+#                    D:\temp\sys_msap01mk_dev0103\timeservice.c              #
+#    List file    =  D:\temp\sys_msap01mk_dev0103\Release\List\timeservice.l #
+#                    st                                                      #
+#    Object file  =  D:\temp\sys_msap01mk_dev0103\Release\Obj\timeservice.r9 #
+#                    0                                                       #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+D:\temp\sys_msap01mk_dev0103\timeservice.c
+      1          #include <ina90.h>
+      2          #include <iom128.h>
+      3          #include "led.h"
+      4          #include "types.h"
+      5          #include "base.h"
+      6          #include "timeservice.h"
+      7          int time;
+      8          int touttable[maxtout];
+
+   \                                 In segment CODE, align 2, keep-with-next
+      9          void initime(){
+   \                     initime:
+     10          char i;
+     11            time=0;
+   \   00000000   E000                       LDI     R16,0
+   \   00000002   E010                       LDI     R17,0
+   \   00000004   ....                       LDI     R30,LOW(time)
+   \   00000006   ....                       LDI     R31,(time) >> 8
+   \   00000008   8300                       ST      Z,R16
+   \   0000000A   8301                       STD     Z+1,R16
+     12            for(i=0;i<maxtout;i++)touttable[i]=0;
+   \   0000000C   ....                       LDI     R30,LOW((time + 2))
+   \   0000000E   ....                       LDI     R31,(time + 2) >> 8
+   \   00000010   E028                       LDI     R18,8
+   \                     ??initime_0:
+   \   00000012   9301                       ST      Z+,R16
+   \   00000014   9301                       ST      Z+,R16
+   \   00000016   952A                       DEC     R18
+   \   00000018   F7E1                       BRNE    ??initime_0
+     13            TCCR3A=0;
+   \   0000001A   9300008B                   STS     139,R16
+     14            TCCR3B=0x0b; //prescaler=64 CTC Moda c перезагрузкой по 1-му
+   \   0000001E   E00B                       LDI     R16,11
+   \   00000020   9300008A                   STS     138,R16
+     15          //  OCR3A=115; //прерывания каждую миллисекунду
+     16            OCR3A=115*2;
+   \   00000024   EE06                       LDI     R16,230
+   \   00000026   93100087                   STS     135,R17
+   \   0000002A   93000086                   STS     134,R16
+     17            ETIMSK_OCIE3A=1; //разрешили прерывания 
+   \   0000002E   9100007D                   LDS     R16,125
+   \   00000032   6100                       ORI     R16,0x10
+   \   00000034   9300007D                   STS     125,R16
+     18          }
+   \   00000038   9508                       RET
+     19          
+     20          
+     21          #pragma vector=TIMER3_COMPA_vect
+
+   \                                 In segment CODE, align 2, keep-with-next
+     22          __interrupt void t3_comp_isr(){
+   \                     t3_comp_isr:
+   \   00000000   93BA                       ST      -Y,R27
+   \   00000002   93AA                       ST      -Y,R26
+   \   00000004   93FA                       ST      -Y,R31
+   \   00000006   93EA                       ST      -Y,R30
+   \   00000008   930A                       ST      -Y,R16
+   \   0000000A   B70F                       IN      R16,0x3F
+     23             time++;
+     24             time &=0x7fff;
+   \   0000000C   ....                       LDI     R26,LOW(time)
+   \   0000000E   ....                       LDI     R27,(time) >> 8
+   \   00000010   91ED                       LD      R30,X+
+   \   00000012   91FC                       LD      R31,X
+   \   00000014   9631                       ADIW    R31 : R30,1
+   \   00000016   77FF                       ANDI    R31,0x7F
+   \   00000018   ....                       LDI     R26,LOW(time)
+   \   0000001A   ....                       LDI     R27,(time) >> 8
+   \   0000001C   93ED                       ST      X+,R30
+   \   0000001E   93FC                       ST      X,R31
+   \   00000020   9711                       SBIW    R27 : R26,1
+     25          /*   off4;
+     26             if ((time&0xff)>100 ) {redon4}
+     27             else gron4
+     28             */
+     29          };
+   \   00000022   BF0F                       OUT     0x3F,R16
+   \   00000024   9109                       LD      R16,Y+
+   \   00000026   91E9                       LD      R30,Y+
+   \   00000028   91F9                       LD      R31,Y+
+   \   0000002A   91A9                       LD      R26,Y+
+   \   0000002C   91B9                       LD      R27,Y+
+   \   0000002E   9518                       RETI
+
+   \                                 In segment NEAR_Z, align 1, keep-with-next
+   \   00000000                              REQUIRE `?<Segment init: NEAR_Z>`
+   \                     time:
+   \   00000000                              DS 2
+     30          
+     31          int touttable[maxtout];
+   \                     touttable:
+   \   00000002                              DS 16
+
+   \                                 In segment CODE, align 2, keep-with-next
+     32          void settout(char num, int tout){
+   \                     settout:
+     33          int tt;
+     34          
+     35             _CLI();
+   \   00000000   94F8                       CLI
+     36             tt=time;
+   \   00000002   ....                       LDI     R30,LOW(time)
+   \   00000004   ....                       LDI     R31,(time) >> 8
+   \   00000006   8140                       LD      R20,Z
+   \   00000008   8151                       LDD     R21,Z+1
+     37            _SEI();
+   \   0000000A   9478                       SEI
+     38             touttable[num]=tt+tout;
+   \   0000000C   0F24                       ADD     R18,R20
+   \   0000000E   1F35                       ADC     R19,R21
+   \   00000010   E012                       LDI     R17,2
+   \   00000012   9F01                       MUL     R16,R17
+   \   00000014   01F0                       MOVW    R31 : R30,R1 : R0
+   \   00000016   ....                       SUBI    R30,LOW((-(time) & 0xFFFF))
+   \   00000018   ....                       SBCI    R31,(-(time) & 0xFFFF) >> 8
+   \   0000001A   8322                       STD     Z+2,R18
+   \   0000001C   8333                       STD     Z+3,R19
+     39          };
+   \   0000001E   9508                       RET
+
+   \                                 In segment CODE, align 2, keep-with-next
+     40          char gettout(char num){
+   \                     gettout:
+     41          int tt;
+     42             _CLI();
+   \   00000000   94F8                       CLI
+     43             tt=time;
+   \   00000002   ....                       LDI     R30,LOW(time)
+   \   00000004   ....                       LDI     R31,(time) >> 8
+   \   00000006   8120                       LD      R18,Z
+   \   00000008   8131                       LDD     R19,Z+1
+     44             _SEI();
+   \   0000000A   9478                       SEI
+     45          /*
+     46             if ((touttable[num]<0)&&(tt<0x4000))
+     47                touttable[num] += 0x8000; //коррекция значения времени при переполнении таймера
+     48             if (touttable[num]>tt) return 1; //таймаут не истек;
+     49             else return 0;   
+     50          */   
+     51             if (touttable[num]<0) {
+   \   0000000C   ....                       LDI     R30,LOW((time + 2))
+   \   0000000E   ....                       LDI     R31,(time + 2) >> 8
+   \   00000010   E012                       LDI     R17,2
+   \   00000012   9F01                       MUL     R16,R17
+   \   00000014   0DE0                       ADD     R30,R0
+   \   00000016   1DF1                       ADC     R31,R1
+   \   00000018   8100                       LD      R16,Z
+   \   0000001A   8111                       LDD     R17,Z+1
+   \   0000001C   2311                       TST     R17
+   \   0000001E   F452                       BRPL    ??gettout_0
+     52                 if(tt<0x4000) {
+   \   00000020   3430                       CPI     R19,64
+   \   00000022   F434                       BRGE    ??gettout_1
+     53                     touttable[num] += 0x8000; //коррекция значения времени при переполнении таймера
+   \   00000024   5810                       SUBI    R17,128
+   \   00000026   8300                       ST      Z,R16
+   \   00000028   8311                       STD     Z+1,R17
+     54                     if (touttable[num]>tt) return 1; //таймаут не истек;
+   \   0000002A   1720                       CP      R18,R16
+   \   0000002C   0731                       CPC     R19,R17
+   \   0000002E   F42C                       BRGE    ??gettout_2
+     55                     else return 0;   
+     56                 }else return 1;    //таймаут не истек;
+   \                     ??gettout_1:
+   \   00000030   E001                       LDI     R16,1
+   \   00000032   9508                       RET
+     57             };    
+     58             //корректировка не нужна просто сравниваем значения
+     59             if (touttable[num]>tt) return 1; //таймаут не истек;
+   \                     ??gettout_0:
+   \   00000034   1720                       CP      R18,R16
+   \   00000036   0731                       CPC     R19,R17
+   \   00000038   F3DC                       BRLT    ??gettout_1
+     60                     else return 0;   
+   \                     ??gettout_2:
+   \   0000003A   E000                       LDI     R16,0
+   \   0000003C   9508                       RET
+     61          
+     62          }
+
+   \                                 In segment NEAR_Z, align 1, keep-with-next
+   \   00000000                              REQUIRE `?<Segment init: NEAR_Z>`
+     63          char red;
+   \                     red:
+   \   00000000                              DS 1
+
+   \                                 In segment CODE, align 2, keep-with-next
+     64          void tsttime(){
+   \                     tsttime:
+     65          //  redonw 
+     66          
+     67            if (red==0){red=1; settout(0,1);offw 
+   \   00000000   9100....                   LDS     R16,red
+   \   00000004   2300                       TST     R16
+   \   00000006   F459                       BRNE    ??tsttime_0
+   \   00000008   E001                       LDI     R16,1
+   \   0000000A   9300....                   STS     red,R16
+   \   0000000E   E021                       LDI     R18,1
+   \   00000010   E030                       LDI     R19,0
+   \   00000012   E000                       LDI     R16,0
+   \   00000014   ....                       RCALL   settout
+   \   00000016   B305                       IN      R16,0x15
+   \   00000018   730F                       ANDI    R16,0x3F
+   \   0000001A   BB05                       OUT     0x15,R16
+     68                                              redonw
+   \   0000001C   C010                       RJMP    ??tsttime_1
+     69                                              return;}
+     70            if (red==1)if (gettout(0)==0){red=2; offw 
+   \                     ??tsttime_0:
+   \   0000001E   3001                       CPI     R16,1
+   \   00000020   F481                       BRNE    ??tsttime_2
+   \   00000022   E000                       LDI     R16,0
+   \   00000024   ....                       RCALL   gettout
+   \   00000026   2300                       TST     R16
+   \   00000028   F461                       BRNE    ??tsttime_2
+   \   0000002A   E002                       LDI     R16,2
+   \   0000002C   9300....                   STS     red,R16
+   \   00000030   B305                       IN      R16,0x15
+   \   00000032   730F                       ANDI    R16,0x3F
+   \   00000034   BB05                       OUT     0x15,R16
+     71                                                settout(0,3000);
+   \   00000036   EB28                       LDI     R18,184
+   \   00000038   E03B                       LDI     R19,11
+   \   0000003A   E000                       LDI     R16,0
+   \   0000003C   ....                       RCALL   settout
+     72                                            redonw
+   \                     ??tsttime_1:
+   \   0000003E   9AAF                       SBI     0x15,0x07
+     73                                            return;};
+   \   00000040   9508                       RET
+     74            if (red==2)if (gettout(0)==0){red=1; offw
+   \                     ??tsttime_2:
+   \   00000042   9100....                   LDS     R16,red
+   \   00000046   3002                       CPI     R16,2
+   \   00000048   F481                       BRNE    ??tsttime_3
+   \   0000004A   E000                       LDI     R16,0
+   \   0000004C   ....                       RCALL   gettout
+   \   0000004E   2300                       TST     R16
+   \   00000050   F461                       BRNE    ??tsttime_3
+   \   00000052   E001                       LDI     R16,1
+   \   00000054   9300....                   STS     red,R16
+   \   00000058   B305                       IN      R16,0x15
+   \   0000005A   730F                       ANDI    R16,0x3F
+   \   0000005C   BB05                       OUT     0x15,R16
+     75                                             settout(0,3000);
+   \   0000005E   EB28                       LDI     R18,184
+   \   00000060   E03B                       LDI     R19,11
+   \   00000062   E000                       LDI     R16,0
+   \   00000064   ....                       RCALL   settout
+     76                                             gronw
+   \   00000066   9AAE                       SBI     0x15,0x06
+     77                                            return;}
+   \   00000068   9508                       RET
+     78            if (red>2) red=0;
+   \                     ??tsttime_3:
+   \   0000006A   9100....                   LDS     R16,red
+   \   0000006E   3003                       CPI     R16,3
+   \   00000070   F018                       BRCS    ??tsttime_4
+   \   00000072   E000                       LDI     R16,0
+   \   00000074   9300....                   STS     red,R16
+   \                     ??tsttime_4:
+   \   00000078   9508                       RET
+     79            
+     80          };
+
+   \                                 In segment INTVEC, offset 0x68, root
+   \   00000000   ........                   JMP     t3_comp_isr
+
+   \                                 In segment ABSOLUTE, at 0x35
+   \   union <unnamed> volatile __io _A_PORTC
+   \                     _A_PORTC:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x7d
+   \   union <unnamed> volatile __io _A_ETIMSK
+   \                     _A_ETIMSK:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x86
+   \   union <unnamed> volatile __io _A_OCR3A
+   \                     _A_OCR3A:
+   \   00000000                              DS 2
+
+   \                                 In segment ABSOLUTE, at 0x8a
+   \   union <unnamed> volatile __io _A_TCCR3B
+   \                     _A_TCCR3B:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x8b
+   \   union <unnamed> volatile __io _A_TCCR3A
+   \                     _A_TCCR3A:
+   \   00000000                              DS 1
+
+   Maximum stack usage in bytes:
+
+     Function     CSTACK RSTACK
+     --------     ------ ------
+     gettout          0      2
+     initime          0      2
+     settout          0      2
+     t3_comp_isr      6      2
+     tsttime          0      2
+       -> settout     0      2
+       -> gettout     0      2
+       -> settout     0      2
+       -> gettout     0      2
+       -> settout     0      2
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+     initime          58
+     t3_comp_isr      48
+     time             18
+     settout          32
+     gettout          62
+     red               1
+     tsttime         122
+     _A_PORTC          1
+     _A_ETIMSK         1
+     _A_OCR3A          2
+     _A_TCCR3B         1
+     _A_TCCR3A         1
+      Others          11
+
+ 
+   6 bytes in segment ABSOLUTE
+ 322 bytes in segment CODE
+   7 bytes in segment INITTAB
+   4 bytes in segment INTVEC
+  19 bytes in segment NEAR_Z
+ 
+ 326 bytes of CODE memory (+ 7 bytes shared)
+  19 bytes of DATA memory (+ 6 bytes shared)
+
+Errors: none
+Warnings: none

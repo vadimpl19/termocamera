@@ -1,0 +1,106 @@
+##############################################################################
+#                                                                            #
+# IAR Atmel AVR C/EC++ Compiler V3.20C/W32             04/Aug/2006  13:21:51 #
+# Copyright 1996-2004 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Source file  =  D:\temp\sys_msap01mk_dev0103\hist.c                     #
+#    Command line =  --cpu=m128 -ms -o D:\temp\sys_msap01mk_dev0103\Release\ #
+#                    Obj\ -lCN D:\temp\sys_msap01mk_dev0103\Release\List\    #
+#                    -y --initializers_in_flash -s9                          #
+#                    -DENABLE_BIT_DEFINITIONS -e -I "F:\Program Files\IAR    #
+#                    Systems\Embedded Workbench 3.2\avr\INC\" -I             #
+#                    "F:\Program Files\IAR Systems\Embedded Workbench        #
+#                    3.2\avr\INC\CLIB\" --eeprom_size 4096                   #
+#                    D:\temp\sys_msap01mk_dev0103\hist.c                     #
+#    List file    =  D:\temp\sys_msap01mk_dev0103\Release\List\hist.lst      #
+#    Object file  =  D:\temp\sys_msap01mk_dev0103\Release\Obj\hist.r90       #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+D:\temp\sys_msap01mk_dev0103\hist.c
+      1          #include "types.h"
+      2          #include "base.h"
+
+   \                                 In segment NEAR_Z, align 1, keep-with-next
+   \   00000000                              REQUIRE `?<Segment init: NEAR_Z>`
+      3          UINT max,ptr;
+   \                     max:
+   \   00000000                              DS 2
+   \                     ptr:
+   \   00000002                              DS 2
+
+   \                                 In segment CODE, align 2, keep-with-next
+      4          void inihist(UINT start_adr,UINT maxadr){
+   \                     inihist:
+      5          
+      6          ptr=start_adr;
+   \   00000000   ....                       LDI     R30,LOW(max)
+   \   00000002   ....                       LDI     R31,(max) >> 8
+   \   00000004   8302                       STD     Z+2,R16
+   \   00000006   8313                       STD     Z+3,R17
+      7          max=maxadr;
+   \   00000008   8320                       ST      Z,R18
+   \   0000000A   8331                       STD     Z+1,R19
+      8          }
+   \   0000000C   9508                       RET
+
+   \                                 In segment CODE, align 2, keep-with-next
+      9          void addh(int h){
+   \                     addh:
+     10          if (ptr<max){hrem[ptr++]=h;};
+   \   00000000   ....                       LDI     R30,LOW(max)
+   \   00000002   ....                       LDI     R31,(max) >> 8
+   \   00000004   8122                       LDD     R18,Z+2
+   \   00000006   8133                       LDD     R19,Z+3
+   \   00000008   8140                       LD      R20,Z
+   \   0000000A   8151                       LDD     R21,Z+1
+   \   0000000C   1724                       CP      R18,R20
+   \   0000000E   0735                       CPC     R19,R21
+   \   00000010   F478                       BRCC    ??addh_0
+   \   00000012   0F22                       LSL     R18
+   \   00000014   1F33                       ROL     R19
+   \   00000016   01F9                       MOVW    R31 : R30,R19 : R18
+   \   00000018   ....                       SUBI    R30,LOW((-(hrem) & 0xFFFF))
+   \   0000001A   ....                       SBCI    R31,(-(hrem) & 0xFFFF) >> 8
+   \   0000001C   8300                       ST      Z,R16
+   \   0000001E   8311                       STD     Z+1,R17
+   \   00000020   ....                       LDI     R30,LOW(max)
+   \   00000022   ....                       LDI     R31,(max) >> 8
+   \   00000024   8102                       LDD     R16,Z+2
+   \   00000026   8113                       LDD     R17,Z+3
+   \   00000028   5F0F                       SUBI    R16,255
+   \   0000002A   4F1F                       SBCI    R17,255
+   \   0000002C   8302                       STD     Z+2,R16
+   \   0000002E   8313                       STD     Z+3,R17
+     11          }
+   \                     ??addh_0:
+   \   00000030   9508                       RET
+
+   Maximum stack usage in bytes:
+
+     Function CSTACK RSTACK
+     -------- ------ ------
+     addh         0      2
+     inihist      0      2
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+     max               4
+     inihist          14
+     addh             50
+      Others           7
+
+ 
+ 64 bytes in segment CODE
+  7 bytes in segment INITTAB
+  4 bytes in segment NEAR_Z
+ 
+ 64 bytes of CODE memory (+ 7 bytes shared)
+  4 bytes of DATA memory
+
+Errors: none
+Warnings: none

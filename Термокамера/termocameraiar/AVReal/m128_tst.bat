@@ -1,0 +1,1 @@
+avreal32 +mega128 -p1 -ab -o16000

@@ -1,0 +1,1 @@
+xlink.exe -Fintel-standard -Z(CODE)CODE=1000 t.r90

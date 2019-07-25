@@ -1,0 +1,16 @@
+Сравнение файлов temp_bad.c и TEMP_CUR.C
+***** temp_bad.c
+temp_ok:                   
+                
+                ramb[0x20 + count[j]+ 32*j] = temp;
+***** TEMP_CUR.C
+temp_ok:                   
+                ramb[0x20 + count[j]+ 32*j] = temp;
+*****
+
+***** temp_bad.c
+***** TEMP_CUR.C
+
+
+*****
+

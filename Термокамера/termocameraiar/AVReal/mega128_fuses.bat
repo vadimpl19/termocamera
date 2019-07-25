@@ -1,0 +1,1 @@
+avreal32.exe +MEGA128 -o0 -p1 -fcksel=f,m103c=1,ckopt=0,sut=3 -w

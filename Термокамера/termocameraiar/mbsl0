@@ -1,0 +1,23 @@
+#include "iom64.h"
+#include "ina90.h"
+#define ENABLE_BIT_DEFINITIONS 1
+
+/* USART0 Control and Status Register B - UCSR0B */
+#define    RXCIE0   7
+#define    TXCIE0   6
+#define    UDRIE0   5
+#define    RXEN0    4
+#define    TXEN0    3
+#define    UCSZ02   2
+#define    RXB80    1
+#define    TXB80    0
+
+
+#define    UPM01    5
+#define    UPM00    4
+
+#define    SEND0ON    PORTE_Bit2=1
+#define    SEND0OFF   PORTE_Bit2=0
+typedef unsigned char UCHAR;
+typedef unsigned int UINT;
+extern UINT getcrc(UCHAR *puchMsg, UINT usDataLen);

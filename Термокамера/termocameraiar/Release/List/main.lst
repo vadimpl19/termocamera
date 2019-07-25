@@ -1,0 +1,335 @@
+##############################################################################
+#                                                                            #
+# IAR Atmel AVR C/EC++ Compiler V3.20C/W32             04/Aug/2006  13:21:52 #
+# Copyright 1996-2004 IAR Systems. All rights reserved.                      #
+#                                                                            #
+#    Source file  =  D:\temp\sys_msap01mk_dev0103\OneWire\main.c             #
+#    Command line =  --cpu=m128 -ms -o D:\temp\sys_msap01mk_dev0103\Release\ #
+#                    Obj\ -lCN D:\temp\sys_msap01mk_dev0103\Release\List\    #
+#                    -y --initializers_in_flash -s9                          #
+#                    -DENABLE_BIT_DEFINITIONS -e -I "F:\Program Files\IAR    #
+#                    Systems\Embedded Workbench 3.2\avr\INC\" -I             #
+#                    "F:\Program Files\IAR Systems\Embedded Workbench        #
+#                    3.2\avr\INC\CLIB\" --eeprom_size 4096                   #
+#                    D:\temp\sys_msap01mk_dev0103\OneWire\main.c             #
+#    List file    =  D:\temp\sys_msap01mk_dev0103\Release\List\main.lst      #
+#    Object file  =  D:\temp\sys_msap01mk_dev0103\Release\Obj\main.r90       #
+#                                                                            #
+#                                                                            #
+##############################################################################
+
+D:\temp\sys_msap01mk_dev0103\OneWire\main.c
+      1          #include <iom128.h>
+      2          #include <inavr.h>
+      3          
+      4          //#include "LED.h"
+      5          #include "1wire.h"
+      6          #include "temp.h"
+      7          #include "delay.h"
+      8          #include "OW.h"
+      9          
+
+   \                                 In segment CODE, align 2, keep-with-next
+     10          void Int_init(void)/***/
+   \                     Int_init:
+     11          {
+     12            EICRB |= (1<<ISC41) | (1<<ISC51) | (1<<ISC61) | (1<<ISC71);
+   \   00000000   B70A                       IN      R16,0x3A
+   \   00000002   6A0A                       ORI     R16,0xAA
+   \   00000004   BF0A                       OUT     0x3A,R16
+     13            //EIMSK |= (1<<INT4) | (1<<INT5) | (1<<INT6) | (1<<INT7);
+     14            EIFR |=  (1<<INTF4) | (1<<INTF5) | (1<<INTF6) | (1<<INTF7);
+   \   00000006   B708                       IN      R16,0x38
+   \   00000008   6F00                       ORI     R16,0xF0
+   \   0000000A   BF08                       OUT     0x38,R16
+     15          }
+   \   0000000C   9508                       RET
+     16          
+
+   \                                 In segment CODE, align 2, keep-with-next
+     17          void LED_init(void)
+   \                     LED_init:
+     18          {
+     19            DDRC = 0xff;
+   \   00000000   EF0F                       LDI     R16,255
+   \   00000002   BB04                       OUT     0x14,R16
+     20            DDRG |= 0x03;
+   \   00000004   91000064                   LDS     R16,100
+   \   00000008   6003                       ORI     R16,0x03
+   \   0000000A   93000064                   STS     100,R16
+     21          }
+   \   0000000E   9508                       RET
+     22          /*
+     23          void LED_test(void)
+     24          {
+     25            gr = gr1 = gr2 = gr3 = gr4 = 1;
+     26            __delay_cycles(3000000);
+     27            gr = gr1 = gr2 = gr3 = gr4 = 0;
+     28            red = red1 = red2 = red3 = red4 = 1;
+     29            __delay_cycles(3000000);
+     30            red = red1 = red2 = red3 = red4 = 0;
+     31          }
+     32          */
+
+   \                                 In segment CODE, align 2, keep-with-next
+     33          void w1_init_line(void)
+   \                     w1_init_line:
+     34          {
+     35            DDRF |= 0x03;
+   \   00000000   91000061                   LDS     R16,97
+   \   00000004   6003                       ORI     R16,0x03
+   \   00000006   93000061                   STS     97,R16
+     36            DDRG |= 0x04;
+   \   0000000A   91000064                   LDS     R16,100
+   \   0000000E   6004                       ORI     R16,0x04
+   \   00000010   93000064                   STS     100,R16
+     37            DDRA |= 0xe6;
+   \   00000014   B30A                       IN      R16,0x1A
+   \   00000016   6E06                       ORI     R16,0xE6
+   \   00000018   BB0A                       OUT     0x1A,R16
+     38          }
+   \   0000001A   9508                       RET
+     39          
+
+   \                                 In segment CODE, align 2, keep-with-next
+     40          void w1_test(void)
+   \                     w1_test:
+     41          {
+     42            unsigned int ii;
+     43            for (ii = 0; ii <60000; ii++)
+   \   00000000   E6E0                       LDI     R30,96
+   \   00000002   EEFA                       LDI     R31,234
+     44            {
+     45            line1_up; line2_up; line3_up; line4_up;
+   \                     ??w1_test_0:
+   \   00000004   91000065                   LDS     R16,101
+   \   00000008   7F0B                       ANDI    R16,0xFB
+   \   0000000A   93000065                   STS     101,R16
+   \   0000000E   9ADF                       SBI     0x1B,0x07
+   \   00000010   98DE                       CBI     0x1B,0x06
+   \   00000012   9ADD                       SBI     0x1B,0x05
+   \   00000014   98DA                       CBI     0x1B,0x02
+   \   00000016   9AD9                       SBI     0x1B,0x01
+   \   00000018   91000062                   LDS     R16,98
+   \   0000001C   7F0D                       ANDI    R16,0xFD
+   \   0000001E   93000062                   STS     98,R16
+   \   00000022   6001                       ORI     R16,0x01
+   \   00000024   93000062                   STS     98,R16
+     46            __delay_cycles(30000000);
+   \   00000028   E70F                       LDI     R16,127
+   \   0000002A   E81D                       LDI     R17,141
+   \   0000002C   E52B                       LDI     R18,91
+   \   0000002E   5001                       SUBI    R16,1
+   \   00000030   4010                       SBCI    R17,0
+   \   00000032   4020                       SBCI    R18,0
+   \   00000034   F7E1                       BRNE    $-6
+   \   00000036   C000                       RJMP    $+2
+   \   00000038   0000                       NOP
+     47            line1_down; line2_down; line3_down; line4_down;
+   \   0000003A   9ADF                       SBI     0x1B,0x07
+   \   0000003C   91000065                   LDS     R16,101
+   \   00000040   6004                       ORI     R16,0x04
+   \   00000042   93000065                   STS     101,R16
+   \   00000046   9ADD                       SBI     0x1B,0x05
+   \   00000048   9ADE                       SBI     0x1B,0x06
+   \   0000004A   9AD9                       SBI     0x1B,0x01
+   \   0000004C   9ADA                       SBI     0x1B,0x02
+   \   0000004E   91000062                   LDS     R16,98
+   \   00000052   6001                       ORI     R16,0x01
+   \   00000054   93000062                   STS     98,R16
+   \   00000058   6002                       ORI     R16,0x02
+   \   0000005A   93000062                   STS     98,R16
+     48            __delay_cycles(30000000);
+   \   0000005E   E70F                       LDI     R16,127
+   \   00000060   E81D                       LDI     R17,141
+   \   00000062   E52B                       LDI     R18,91
+   \   00000064   5001                       SUBI    R16,1
+   \   00000066   4010                       SBCI    R17,0
+   \   00000068   4020                       SBCI    R18,0
+   \   0000006A   F7E1                       BRNE    $-6
+   \   0000006C   C000                       RJMP    $+2
+   \   0000006E   0000                       NOP
+     49            pwr1_on; pwr2_on; pwr3_on; pwr4_on;
+   \   00000070   91000065                   LDS     R16,101
+   \   00000074   7F0B                       ANDI    R16,0xFB
+   \   00000076   93000065                   STS     101,R16
+   \   0000007A   98DF                       CBI     0x1B,0x07
+   \   0000007C   98DE                       CBI     0x1B,0x06
+   \   0000007E   98DD                       CBI     0x1B,0x05
+   \   00000080   98DA                       CBI     0x1B,0x02
+   \   00000082   98D9                       CBI     0x1B,0x01
+   \   00000084   91000062                   LDS     R16,98
+   \   00000088   7F0D                       ANDI    R16,0xFD
+   \   0000008A   93000062                   STS     98,R16
+   \   0000008E   7F0E                       ANDI    R16,0xFE
+   \   00000090   93000062                   STS     98,R16
+     50            __delay_cycles(30000000);
+   \   00000094   E70F                       LDI     R16,127
+   \   00000096   E81D                       LDI     R17,141
+   \   00000098   E52B                       LDI     R18,91
+   \   0000009A   5001                       SUBI    R16,1
+   \   0000009C   4010                       SBCI    R17,0
+   \   0000009E   4020                       SBCI    R18,0
+   \   000000A0   F7E1                       BRNE    $-6
+   \   000000A2   C000                       RJMP    $+2
+   \   000000A4   0000                       NOP
+     51            pwr1_off; pwr2_off; pwr3_off; pwr4_off;
+   \   000000A6   9ADF                       SBI     0x1B,0x07
+   \   000000A8   9ADD                       SBI     0x1B,0x05
+   \   000000AA   9AD9                       SBI     0x1B,0x01
+   \   000000AC   91000062                   LDS     R16,98
+   \   000000B0   6001                       ORI     R16,0x01
+   \   000000B2   93000062                   STS     98,R16
+     52            __delay_cycles(30000000);
+   \   000000B6   E70F                       LDI     R16,127
+   \   000000B8   E81D                       LDI     R17,141
+   \   000000BA   E52B                       LDI     R18,91
+   \   000000BC   5001                       SUBI    R16,1
+   \   000000BE   4010                       SBCI    R17,0
+   \   000000C0   4020                       SBCI    R18,0
+   \   000000C2   F7E1                       BRNE    $-6
+   \   000000C4   C000                       RJMP    $+2
+   \   000000C6   0000                       NOP
+     53            }
+   \   000000C8   9731                       SBIW    R31 : R30,1
+   \   000000CA   2F0E                       MOV     R16,R30
+   \   000000CC   2B0F                       OR      R16,R31
+   \   000000CE   F009                       BREQ    $+2+2
+   \   000000D0   CF99                       RJMP    ??w1_test_0
+     54          }
+   \   000000D2   9508                       RET
+     55          extern unsigned char flag;
+     56          extern unsigned char f_presence;
+
+   \                                 In segment CODE, align 2, keep-with-next
+     57          void Init(void)
+   \                     Init:
+     58          {
+     59            line1_up; line2_up; line3_up; line4_up;
+   \   00000000   91000065                   LDS     R16,101
+   \   00000004   7F0B                       ANDI    R16,0xFB
+   \   00000006   93000065                   STS     101,R16
+   \   0000000A   9ADF                       SBI     0x1B,0x07
+   \   0000000C   98DE                       CBI     0x1B,0x06
+   \   0000000E   9ADD                       SBI     0x1B,0x05
+   \   00000010   98DA                       CBI     0x1B,0x02
+   \   00000012   9AD9                       SBI     0x1B,0x01
+   \   00000014   91000062                   LDS     R16,98
+   \   00000018   7F0D                       ANDI    R16,0xFD
+   \   0000001A   93000062                   STS     98,R16
+   \   0000001E   6001                       ORI     R16,0x01
+   \   00000020   93000062                   STS     98,R16
+     60            Int_init();
+   \   00000024   ....                       RCALL   Int_init
+     61            LED_init();
+   \   00000026   ....                       RCALL   LED_init
+     62            //LED_test();
+     63            w1_init_line();
+   \   00000028   ....                       RCALL   w1_init_line
+     64            flag=0;
+   \   0000002A   E000                       LDI     R16,0
+   \   0000002C   9300....                   STS     flag,R16
+     65            f_presence=0x0f;
+   \   00000030   E00F                       LDI     R16,15
+   \   00000032   9300....                   STS     f_presence,R16
+     66            //w1_test();//тест управления шлейфами
+     67          }
+   \   00000036   9508                       RET
+
+   \                                 In segment ABSOLUTE, at 0x34
+   \   union <unnamed> volatile __io _A_DDRC
+   \                     _A_DDRC:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x3a
+   \   union <unnamed> volatile __io _A_DDRA
+   \                     _A_DDRA:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x3b
+   \   union <unnamed> volatile __io _A_PORTA
+   \                     _A_PORTA:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x58
+   \   union <unnamed> volatile __io _A_EIFR
+   \                     _A_EIFR:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x5a
+   \   union <unnamed> volatile __io _A_EICRB
+   \                     _A_EICRB:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x61
+   \   union <unnamed> volatile __io _A_DDRF
+   \                     _A_DDRF:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x62
+   \   union <unnamed> volatile __io _A_PORTF
+   \                     _A_PORTF:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x64
+   \   union <unnamed> volatile __io _A_DDRG
+   \                     _A_DDRG:
+   \   00000000                              DS 1
+
+   \                                 In segment ABSOLUTE, at 0x65
+   \   union <unnamed> volatile __io _A_PORTG
+   \                     _A_PORTG:
+   \   00000000                              DS 1
+     68          /*
+     69          void main(void)
+     70          {
+     71            Init();
+     72            while (1)
+     73              {
+     74                GetT();
+     75              }
+     76          }
+     77          */
+
+   Maximum stack usage in bytes:
+
+     Function          CSTACK RSTACK
+     --------          ------ ------
+     Init                  0      2
+       -> Int_init         0      2
+       -> LED_init         0      2
+       -> w1_init_line     0      2
+     Int_init              0      2
+     LED_init              0      2
+     w1_init_line          0      2
+     w1_test               0      2
+
+
+   Segment part sizes:
+
+     Function/Label Bytes
+     -------------- -----
+     Int_init         14
+     LED_init         16
+     w1_init_line     28
+     w1_test         212
+     Init             56
+     _A_DDRC           1
+     _A_DDRA           1
+     _A_PORTA          1
+     _A_EIFR           1
+     _A_EICRB          1
+     _A_DDRF           1
+     _A_PORTF          1
+     _A_DDRG           1
+     _A_PORTG          1
+
+ 
+   9 bytes in segment ABSOLUTE
+ 326 bytes in segment CODE
+ 
+ 326 bytes of CODE memory
+   0 bytes of DATA memory (+ 9 bytes shared)
+
+Errors: none
+Warnings: none

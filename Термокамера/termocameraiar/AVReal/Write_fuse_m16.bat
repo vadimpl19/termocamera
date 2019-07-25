@@ -1,0 +1,1 @@
+avreal32.exe +MEGA16 -o11.0592MHZ -p1 -fblev=0,boden=0,jtagen=1,ckopt=0,cksel=F,sut=1 -w

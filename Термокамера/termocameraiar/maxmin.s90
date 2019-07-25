@@ -1,0 +1,32 @@
+/**************************************************
+ *
+ * IAR EMBEDDED WORKBENCH TUTORIAL
+ *
+ * Copyright 1996 - 2003 IAR Systems. All rights reserved.
+ *
+ * $Revision: 1.2 $
+ *
+ **************************************************/
+
+	MODULE  max
+	PUBLIC  max
+	RSEG    CODE:CODE
+        
+max: 	CP R16, R17
+	BRGE endmax
+	MOV R16, R17
+endmax:
+	RET      	; R16 := MAX(R16,R17)
+	ENDMOD
+        
+	MODULE min
+	PUBLIC min
+	RSEG	CODE:CODE
+        
+min: 	CP R17, R16
+	BRGE endmin
+	MOV R16, R17
+endmin:
+	RET      	; R16 := MIN(R16,R17)
+	ENDMOD
+	END

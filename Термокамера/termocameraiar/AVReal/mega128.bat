@@ -1,0 +1,1 @@
+avreal32 +mega128 -p1 -o14.7456MHz -n -e -v -w  -c %1
